@@ -1,0 +1,14 @@
+﻿@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize] 
+@page "/"
+
+<h1>Hello, world!</h1>
+
+<AuthorizeView>
+    <Authorized>
+        <h5>Hello Signed in User</h5>
+    </Authorized>
+    <NotAuthorized>
+        <h5>Hello Anon</h5>
+    </NotAuthorized>
+</AuthorizeView>
