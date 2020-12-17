@@ -19,7 +19,7 @@ namespace CirrusWebApp.Pages
             string provider = "Google";
             var authenticationProperties = new AuthenticationProperties
             {
-                RedirectUri = Url.Page("./Login",
+                RedirectUri = Url.Page("./LoginCall",
                 pageHandler: "Callback",
                 values: new { returnUrl }
                 )
