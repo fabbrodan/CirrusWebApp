@@ -9,7 +9,7 @@ namespace CirrusWebApp.Data.Services
 {
     public class PasswordHashService
     {
-        private static Encoding _encoding;
+        public readonly Encoding _encoding;
         private static int _saltSize;
         private static readonly RNGCryptoServiceProvider rNg = new RNGCryptoServiceProvider();
         public readonly string RandomSalt = null;
@@ -49,6 +49,14 @@ namespace CirrusWebApp.Data.Services
             return _encoding.GetString(saltBytes);
         }
 
+        public string GeneratePasswordHash(string PasswordText)
+        {
+            HashAlgorithm alg = new SHA512Managed();
+            byte[] passwordBytes = _encoding.GetBytes(PasswordText);
+
+            return _encoding.GetString(alg.ComputeHash(passwordBytes));
+        }
+
         public string GenerateSaltedHash(string PassWordText)
         {
             HashAlgorithm alg = new SHA512Managed();
@@ -70,6 +78,13 @@ namespace CirrusWebApp.Data.Services
             return _encoding.GetString(alg.ComputeHash(saltedHashBytes));
         }
 
+        /// <summary>
+        /// Verifies the clear text <paramref name="PasswordText"/> with the Salt and <paramref name="HashToCheck"/>
+        /// </summary>
+        /// <param name="PasswordText"></param>
+        /// <param name="Salt"></param>
+        /// <param name="HashToCheck"></param>
+        /// <returns></returns>
         public bool VerifyPassword(string PasswordText, string Salt, string HashToCheck)
         {
             bool bSuccess = false;
@@ -88,6 +103,33 @@ namespace CirrusWebApp.Data.Services
             for (int j = 0; j < PasswordText.Length; j++)
             {
                 saltedHashBytes[Salt.Length + j] = passwordBytes[j];
+            }
+
+            if (_encoding.GetString(alg.ComputeHash(saltedHashBytes)) == HashToCheck)
+            {
+                bSuccess = true;
+            }
+
+            return bSuccess;
+        }
+
+        public bool VerifyPassword(byte[] PasswordBytes, string Salt, string HashToCheck)
+        {
+            bool bSuccess = false;
+
+            HashAlgorithm alg = new SHA512Managed();
+
+            byte[] saltBytes = _encoding.GetBytes(Salt);
+
+            byte[] saltedHashBytes = new byte[saltBytes.Length + PasswordBytes.Length];
+
+            for (int i = 0; i < Salt.Length; i++)
+            {
+                saltedHashBytes[i] = saltBytes[i];
+            }
+            for (int j = 0; j < PasswordBytes.Length; j++)
+            {
+                saltedHashBytes[Salt.Length + j] = PasswordBytes[j];
             }
 
             if (_encoding.GetString(alg.ComputeHash(saltedHashBytes)) == HashToCheck)

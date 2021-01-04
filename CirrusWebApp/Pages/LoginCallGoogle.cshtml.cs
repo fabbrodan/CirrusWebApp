@@ -8,12 +8,20 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using CirrusWebApp.Data.Services;
+using CirrusWebApp.Data.Models;
 
 namespace CirrusWebApp.Pages
 {
     [AllowAnonymous]
     public class LoginCallGoogleModel : PageModel
     {
+        private readonly CosmosDbService _dbService;
+
+        public LoginCallGoogleModel(CosmosDbService CosmosDbService)
+        {
+            _dbService = CosmosDbService;
+        }
         public IActionResult OnGetAsync(string returnUrl = null)
         {
             string provider = "Google";
@@ -40,6 +48,22 @@ namespace CirrusWebApp.Pages
                     IsPersistent = true,
                     RedirectUri = this.Request.Host.Value
                 };
+                User NativeUser = new User
+                {
+                    id = GoogleUser.Claims.Where(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier").FirstOrDefault().Value,
+                    Email = GoogleUser.Claims.Where(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress").FirstOrDefault().Value,
+                    Firstname = GoogleUser.Claims.Where(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname").FirstOrDefault().Value,
+                    Lastname = GoogleUser.Claims.Where(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname").FirstOrDefault().Value
+                };
+
+                User DbUser = await _dbService.GetUser(NativeUser);
+
+                if (DbUser is null)
+                {
+                    NativeUser.RegisteredDateTime = DateTime.UtcNow;
+                    await _dbService.AddUser(NativeUser);
+                }
+
                 await HttpContext.SignInAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme,
                 new ClaimsPrincipal(GoogleUser),

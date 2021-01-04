@@ -17,7 +17,7 @@ namespace CirrusWebApp.Data.Services
 
         private CosmosClient CosmosDbClient;
         private Container CosmosContainer;
-        private PartitionKey UserPartitionKey = new PartitionKey(@"/user/email");
+        private PartitionKey UserPartitionKey = new PartitionKey(@"/user/id");
         private PartitionKey FilePartitionKey = new PartitionKey(@"/files/id");
         public CosmosDbService()
         {
@@ -27,12 +27,12 @@ namespace CirrusWebApp.Data.Services
 
         public async Task AddUser(Models.User User)
         {
-            await CosmosContainer.CreateItemAsync(User, UserPartitionKey);
+            await CosmosContainer.CreateItemAsync(User);
         }
 
         public async Task<Models.User> GetUser(Models.User User)
         {
-            var queryText = "SELECT * FROM c WHERE c.id = '" + User.Email + "'";
+            var queryText = "SELECT * FROM c WHERE c.id = '" + User.id + "'";
             QueryDefinition queryDefinition = new (queryText);
             FeedIterator<Models.User> queryResultIterator = CosmosContainer.GetItemQueryIterator<Models.User>(queryDefinition);
 
