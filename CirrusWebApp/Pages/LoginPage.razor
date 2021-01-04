@@ -1,10 +1,43 @@
-﻿@page "/Login"
+﻿@using CirrusWebApp.Data.Services
+@using CirrusWebApp.Data.Models
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Http
+@using Microsoft.AspNetCore.Authentication;
+@using Microsoft.AspNetCore.Authentication.Cookies;
+@page "/Login"
+
+@inject CosmosDbService DbService
+@inject PasswordHashService PasswordService
+@inject IHttpContextAccessor HttpContextAccessor
+@inject NavigationManager NavManager
 
 <h3>Login</h3>
-<NavLink class="nav-link" href="/LoginCall">
-    <span class="oi oi-home" aria-hidden="true"></span> Sign In
+<NavLink class="nav-link" href="/LoginCallGoogle">
+    <span class="oi oi-account-login" aria-hidden="true"></span> Sign In with Google
 </NavLink>
 
+<EditForm Model="@SignInUser" OnSubmit="Submit">
+    <ValidationSummary />
+    <div class="form-control">
+        <InputText @bind-Value="SignInUser.Email" placeholder="Email" />
+    </div>
+    <div class="form-control">
+        <InputText @bind-Value="SignInUser.Password" placeholder="Password" type="password" />
+    </div>
+    <div class="form-control">
+        <InputCheckbox @bind-Value="PersistentCookie" />
+        <label>Remember Me</label>
+    </div>
+    <button type="submit">Sign In</button>
+</EditForm>
+
 @code {
-    
+
+    User SignInUser = new User();
+    bool PersistentCookie;
+
+    public void Submit()
+    {
+        NavManager.NavigateTo($"/LoginCallNative/{SignInUser.Email}/{SignInUser.Password}/{PersistentCookie}", true);
+    }
 }

@@ -34,6 +34,7 @@ namespace CirrusWebApp
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services.AddSingleton<CosmosDbService>();
+            services.AddSingleton<PasswordHashService>();
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie();
             services.AddAuthentication().AddGoogle(o =>
@@ -73,6 +74,7 @@ namespace CirrusWebApp
 
             app.UseCookiePolicy();
             app.UseAuthentication();
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {

@@ -12,14 +12,14 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 namespace CirrusWebApp.Pages
 {
     [AllowAnonymous]
-    public class LoginModel : PageModel
+    public class LoginCallGoogleModel : PageModel
     {
         public IActionResult OnGetAsync(string returnUrl = null)
         {
             string provider = "Google";
             var authenticationProperties = new AuthenticationProperties
             {
-                RedirectUri = Url.Page("./LoginCall",
+                RedirectUri = Url.Page("./LoginCallGoogle",
                 pageHandler: "Callback",
                 values: new { returnUrl }
                 )
