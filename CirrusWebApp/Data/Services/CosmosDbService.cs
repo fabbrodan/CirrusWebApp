@@ -13,28 +13,31 @@ namespace CirrusWebApp.Data.Services
         private string CosmosURI = "https://cirrus-csp.documents.azure.com:443/";
         private string CosmosKey = "VV4xsp3QkDSnqaDllWIpblTo9uJjybNkDHlAzqGhDwA6YUC4TdOHsCQuPkwgU6shIQl4Lfu6s7N844WUQXVEVw=="; /*Environment.GetEnvironmentVariable("CosmosKey");*/
         private string CosmosDB = "cirrus-db";
-        private string CosmosContainerName = "cirrus-container";
+        private string CosmosUserContainerName = "cirrus-user-container";
+        private string CosmosUserFileContainerName = "cirrus-user-file-container";
 
         private CosmosClient CosmosDbClient;
-        private Container CosmosContainer;
+        private Container CosmosUserContainer;
+        private Container CosmosUserFileContainer;
         private PartitionKey UserPartitionKey = new PartitionKey(@"/user/id");
-        private PartitionKey FilePartitionKey = new PartitionKey(@"/files/id");
+        private PartitionKey FilePartitionKey = new PartitionKey(@"/user/id");
         public CosmosDbService()
         {
             CosmosDbClient = new CosmosClient(CosmosURI, CosmosKey);
-            CosmosContainer = CosmosDbClient.GetContainer(CosmosDB, CosmosContainerName);
+            CosmosUserContainer = CosmosDbClient.GetContainer(CosmosDB, CosmosUserContainerName);
+            CosmosUserFileContainer = CosmosDbClient.GetContainer(CosmosDB, CosmosUserContainerName);
         }
 
         public async Task AddUser(Models.User User)
         {
-            await CosmosContainer.CreateItemAsync(User);
+            await CosmosUserContainer.CreateItemAsync(User);
         }
 
         public async Task<Models.User> GetUser(Models.User User)
         {
             var queryText = "SELECT * FROM c WHERE c.id = '" + User.id + "'";
             QueryDefinition queryDefinition = new (queryText);
-            FeedIterator<Models.User> queryResultIterator = CosmosContainer.GetItemQueryIterator<Models.User>(queryDefinition);
+            FeedIterator<Models.User> queryResultIterator = CosmosUserContainer.GetItemQueryIterator<Models.User>(queryDefinition);
 
             List<Models.User> userResult = new();
             while(queryResultIterator.HasMoreResults)
@@ -48,7 +51,7 @@ namespace CirrusWebApp.Data.Services
 
         public async Task AddFile(File File)
         {
-            await CosmosContainer.CreateItemAsync(File, FilePartitionKey);
+            await CosmosUserFileContainer.CreateItemAsync(File, FilePartitionKey);
         }
     }
 }

@@ -1,0 +1,40 @@
+﻿@using Microsoft.AspNetCore.Http 
+
+@page "/MyPage"
+
+@inject IHttpContextAccessor HttpContext
+
+<h3>My Page</h3>
+
+<EditForm EditContext="Context" OnValidSubmit="Upload">
+    <div class="form-group">
+        <InputFile OnChange="FileAdd" Multiple/>
+    </div>
+    <div class="form-group">
+        <button type="submit">Upload</button>
+    </div>
+</EditForm>
+
+@code {
+    private IReadOnlyList<IBrowserFile> Files = new List<IBrowserFile>();
+    private EditContext Context;
+
+    protected override void OnInitialized()
+    {
+        Context = new EditContext(Files);
+        base.OnInitialized();
+    }
+
+    private void FileAdd(InputFileChangeEventArgs e)
+    {
+        Files = e.GetMultipleFiles();
+    }
+
+    private async Task Upload()
+    {
+        foreach (var file in Files)
+        {
+            Console.WriteLine(file.Name);
+        }
+    }
+}
