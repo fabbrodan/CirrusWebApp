@@ -10,6 +10,8 @@ namespace CirrusWebApp.Data.Models
         public string id { get; set; }
         public string FileName { get; set; }
         public string FileTitle { get; set; }
+        public string FileExtension { get; set; }
+        public byte[] Content { get; set; }
         public List<string> Categories { get; set; } = new ();
     }
 }

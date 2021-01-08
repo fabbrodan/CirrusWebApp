@@ -25,7 +25,7 @@ namespace CirrusWebApp.Data.Services
         {
             CosmosDbClient = new CosmosClient(CosmosURI, CosmosKey);
             CosmosUserContainer = CosmosDbClient.GetContainer(CosmosDB, CosmosUserContainerName);
-            CosmosUserFileContainer = CosmosDbClient.GetContainer(CosmosDB, CosmosUserContainerName);
+            CosmosUserFileContainer = CosmosDbClient.GetContainer(CosmosDB, CosmosUserFileContainerName);
         }
 
         public async Task AddUser(Models.User User)

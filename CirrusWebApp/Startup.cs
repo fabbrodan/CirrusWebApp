@@ -35,6 +35,7 @@ namespace CirrusWebApp
             services.AddServerSideBlazor();
             services.AddSingleton<CosmosDbService>();
             services.AddSingleton<PasswordHashService>();
+            services.AddSingleton<DataLakeSevice>();
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie();
             services.AddAuthentication().AddGoogle(o =>
