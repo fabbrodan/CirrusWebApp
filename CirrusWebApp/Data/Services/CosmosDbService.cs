@@ -51,7 +51,7 @@ namespace CirrusWebApp.Data.Services
 
         public async Task AddFile(File File)
         {
-            await CosmosUserFileContainer.CreateItemAsync(File, FilePartitionKey);
+            await CosmosUserFileContainer.CreateItemAsync(File);
         }
     }
 }

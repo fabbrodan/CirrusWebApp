@@ -11,7 +11,7 @@ namespace CirrusWebApp.Data.Models
         public string FileName { get; set; }
         public string FileTitle { get; set; }
         public string FileExtension { get; set; }
-        public byte[] Content { get; set; }
+        public string PrimaryFilePath { get; set; }
         public List<string> Categories { get; set; } = new ();
     }
 }

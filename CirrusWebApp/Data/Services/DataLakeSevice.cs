@@ -28,21 +28,22 @@ namespace CirrusWebApp.Data.Services
             FileSystemClient = ServiceClient.GetFileSystemClient("user-files");
         }
 
-        public async Task<bool> UploadFile(IBrowserFile File, Models.File CirrusFile, string UserId)
+        public async Task<string> UploadFile(IBrowserFile WebFile, Models.File CirrusFile, string UserId)
         {
             var DirectoryClient = FileSystemClient.GetDirectoryClient(UserId);
+            DataLakeFileClient FileClient = null;
             foreach (string Category in CirrusFile.Categories)
             {
-                var fc = DirectoryClient.CreateSubDirectoryAsync(Category).Result.Value.CreateFileAsync(CirrusFile.FileName).Result.Value;
+                FileClient = DirectoryClient.CreateSubDirectoryAsync(Category).Result.Value.CreateFileAsync(CirrusFile.FileName).Result.Value;
                 using (var MS = new MemoryStream())
                 {
-                    await File.OpenReadStream().CopyToAsync(MS);
+                    await WebFile.OpenReadStream().CopyToAsync(MS);
                     MS.Position = 0;
-                    await fc.AppendAsync(MS, 0);
-                    await fc.FlushAsync(position: MS.Length);
+                    await FileClient.AppendAsync(MS, 0);
+                    await FileClient.FlushAsync(position: MS.Length);
                 }
             }
-            return true;
+            return FileClient == null ? null : FileClient.Path + "/" + CirrusFile.FileName;
         }
         public async Task<DataLakeDirectoryClient> CreateUserDirectory(User user)
         {

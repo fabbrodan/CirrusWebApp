@@ -1,95 +1,38 @@
-﻿@using Microsoft.AspNetCore.Http 
-@using CirrusWebApp.Data.Models; 
-@using CirrusWebApp.Data.Services;
+﻿@page "/MyPage"
+<div class="accordion" id="myPageAccordion">
 
-@page "/MyPage"
+    <div class="card">
+        <div class="card-header" id="myFilesHeading">
+            <h2 class="mb-0">
+                <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#myFiles" aria-expanded="true" aria-controls="myFiles">
+                    My Files
+                </button>
+            </h2>
+        </div>
 
-@inject IHttpContextAccessor HttpContextAccessor
-@inject CosmosDbService CosmosService
-@inject DataLakeSevice DataLakeSevice
-
-<h3>My Page</h3>
-
-<EditForm EditContext="Context" OnValidSubmit="Upload">
-    <div class="form-group">
-        <InputFile OnChange="FileAdd" Multiple />
+        <div id="myFiles" class="collapse show" aria-labelledby="myFilesHeading" data-parent="#myPageAccordion">
+            <div class="card-body">
+                <FileDisplayComponent />
+            </div>
+        </div>
     </div>
-    <div class="form-group">
-        @if (CirrusFiles != null)
-        {
-            foreach (File file in CirrusFiles)
-            {
-                <div class="row">
-                    <div class="col-6">
-                        <p class="p-3">@file.FileName</p>
-                    </div>
-                    <div class="col-6">
-                        <input @onchange="(ChangeEventArgs _event) => SetCategories(_event, file.FileName)" />
-                    </div>
-                </div>
-            }
-        }
-    @if (UploadComplete != null)
-    {
-        if (UploadComplete == false)
-        {
-            <div class="spinner"></div>
-        }
-        else
-        {
-            <p><em>Completed!</em></p>
-        }
-    }
+    <div class="card">
+        <div class="card-header" id="uploadFilesHeader">
+            <h2 class="mb-0">
+                <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#uploadFiles" aria-expanded="false" aria-controls="uploadFiles">
+                    Upload Files
+                </button>
+            </h2>
+        </div>
+        <div id="uploadFiles" class="collapse" aria-labelledby="uploadFilesHeader" data-parent="#myPageAccordion">
+            <div class="card-body">
+                <FileUploadComponent />
+            </div>
+        </div>
     </div>
-    <div class="form-group">
-        <button type="submit">Upload</button>
-    </div>
-</EditForm>
+
+</div>
 
 @code {
-    private IReadOnlyList<IBrowserFile> Files = new List<IBrowserFile>();
-    private List<File> CirrusFiles;
-    private EditContext Context;
-    private bool? UploadComplete = null;
 
-    protected override void OnInitialized()
-    {
-        Context = new EditContext(Files);
-        base.OnInitialized();
-    }
-
-    private void FileAdd(InputFileChangeEventArgs e)
-    {
-        Files = e.GetMultipleFiles();
-        CirrusFiles = new List<File>();
-        foreach (IBrowserFile file in Files)
-        {
-
-            CirrusFiles.Add(new File
-            {
-                id = file.Name,
-                FileName = file.Name,
-                FileTitle = file.Name,
-                FileExtension = file.ContentType
-            });
-        }
-    }
-
-    private void SetCategories(ChangeEventArgs e, string fileName)
-    {
-        List<string> Categories = e.Value.ToString().Replace(" ", "").Split(";").ToList<string>();
-        CirrusFiles.Where<File>(f => f.FileName == fileName).FirstOrDefault().Categories = Categories;
-    }
-
-    private async Task Upload()
-    {
-        UploadComplete = false;
-        for (int i = 0; i < Files.Count; i++)
-        {
-            IBrowserFile WebFile = Files[i];
-            File CirrusFile = CirrusFiles[i];
-            UploadComplete = await DataLakeSevice.UploadFile(WebFile, CirrusFile,
-            HttpContextAccessor.HttpContext.User.Claims.Where(u => u.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier").FirstOrDefault().Value);
-        }
-    }
-}
+} 
