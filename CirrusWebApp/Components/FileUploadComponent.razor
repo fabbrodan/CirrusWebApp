@@ -83,7 +83,7 @@
                 id = Guid.NewGuid().ToString(),
                 FileName = file.Name,
                 FileTitle = FileTitle,
-                FileExtension = file.Name.Substring(file.Name.LastIndexOf("."))
+                FileExtension = file.Name.Substring(file.Name.LastIndexOf(".") + 1)
             });
         }
     }
