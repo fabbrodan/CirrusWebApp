@@ -56,7 +56,7 @@ namespace CirrusWebApp.Pages
                     Lastname = GoogleUser.Claims.Where(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname").FirstOrDefault().Value
                 };
 
-                User DbUser = await _dbService.GetUser(NativeUser);
+                User DbUser = await _dbService.GetUser(NativeUser.id);
 
                 if (DbUser is null)
                 {

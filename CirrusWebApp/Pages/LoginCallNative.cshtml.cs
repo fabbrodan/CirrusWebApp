@@ -29,7 +29,7 @@ namespace CirrusWebApp.Pages
         public async Task<IActionResult> OnGetAsync(string Email, string Password, bool PersistentCookie)
         {
             var SignInUser = new User { id = Email, Password = Password };
-            User DbUser = await _dbService.GetUser(SignInUser);
+            User DbUser = await _dbService.GetUser(SignInUser.id);
 
             if (DbUser != null)
             {

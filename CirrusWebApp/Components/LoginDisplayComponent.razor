@@ -6,7 +6,10 @@
 @if (User.Identity.Name != null)
 {
     <b>@Firstname @Lastname</b>
-    <img style="width: 15px; height: 15px;" src="@Avatar" />
+    @if (Avatar != null)
+    {
+        <img style="width: 15px; height: 15px;" src="@Avatar" />
+    }
     <AuthorizeView>
         <Authorized>
             <a href="/LogoutCall">Sign Out</a>
@@ -23,14 +26,22 @@
 
     protected override void OnInitialized()
     {
-        base.OnInitialized();
-
-        User = _httpContextAccessor.HttpContext.User ?? null;
-        if (User != null)
+        try
         {
-            Firstname = User.FindFirst(ClaimTypes.GivenName)?.Value ?? "";
-            Lastname = User.FindFirst(ClaimTypes.Surname)?.Value ?? "";
-            Avatar = User.FindFirst("urn:google:image")?.Value ?? "";
+            User = _httpContextAccessor.HttpContext.User == null ? null : _httpContextAccessor.HttpContext.User;
+            if (User != null)
+            {
+                Firstname = User.FindFirst(ClaimTypes.GivenName) == null ? "" : User.FindFirst(ClaimTypes.GivenName).Value;
+                Lastname = User.FindFirst(ClaimTypes.Surname) == null ? "" : User.FindFirst(ClaimTypes.Surname).Value;
+                Avatar = User.FindFirst("urn:google:image") == null ? null : User.FindFirst("urn:google:image").Value;
+            }
+
+            base.OnInitialized();
+        }
+        catch (NullReferenceException exc)
+        {
+            Console.WriteLine(_httpContextAccessor.HttpContext.User);
+            Console.WriteLine(exc.Message);
         }
     }
 }

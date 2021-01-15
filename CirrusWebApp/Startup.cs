@@ -2,19 +2,14 @@ using CirrusWebApp.Data;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using CirrusWebApp.Data.Services;
 using Microsoft.AspNetCore.Http;
 using System.Net.Http;
+using Blazored.Localisation;
 
 namespace CirrusWebApp
 {
@@ -36,8 +31,13 @@ namespace CirrusWebApp
             services.AddSingleton<CosmosDbService>();
             services.AddSingleton<PasswordHashService>();
             services.AddSingleton<DataLakeSevice>();
+            services.AddSingleton<AppState>();
+
+            services.AddBlazoredLocalisation();
+            
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie();
+
             services.AddAuthentication().AddGoogle(o =>
             {
                 o.ClientId = Configuration["Google:ClientId"];

@@ -1,5 +1,66 @@
-﻿<h3>FileDisplayComponent</h3>
+﻿@using CirrusWebApp.Data;
+@using CirrusWebApp.Data.Models;
+@using CirrusWebApp.Data.Services;
+@using Microsoft.AspNetCore.Http;
+@using System.Security.Claims;
 
-@code {
+@inject CosmosDbService CosmosService
+@inject IHttpContextAccessor HttpContextAccessor
+@inject AppState AppState
 
-}
+@implements IDisposable
+
+    @if (UserFiles is null)
+    {
+        <div class="spinner-border"></div>
+    }
+    else
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">File Name:</th>
+                    <th scope="col">Last modified:</th>
+                    <th scope="col">Categories</th>
+                    <th scope="col"></th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (File file in UserFiles)
+                {
+                    <tr>
+                        <th scope="row">@file.FileTitle</th>
+                        <td>@file.LastModified</td>
+                        <td>@file.Categories</td>
+                        <td>
+                            <button class="btn btn-dark">Download</button>
+                        </td>
+                        <td>
+                            <button class="btn btn-danger">Delete</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+        @code {
+
+    private List<File> UserFiles;
+        string UserId;
+
+        protected override async Task OnInitializedAsync()
+        {
+            AppState.OnChange += StateHasChanged;
+
+            UserId = HttpContextAccessor.HttpContext.User.Claims.Where(u => u.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier").FirstOrDefault().Value;
+            UserFiles = await CosmosService.GetFiles(UserId);
+            base.OnInitialized();
+        }
+
+        public void Dispose()
+        {
+            AppState.OnChange -= StateHasChanged;
+        }
+        }

@@ -19,8 +19,6 @@ namespace CirrusWebApp.Data.Services
         private CosmosClient CosmosDbClient;
         private Container CosmosUserContainer;
         private Container CosmosUserFileContainer;
-        private PartitionKey UserPartitionKey = new PartitionKey(@"/user/id");
-        private PartitionKey FilePartitionKey = new PartitionKey(@"/user/id");
         public CosmosDbService()
         {
             CosmosDbClient = new CosmosClient(CosmosURI, CosmosKey);
@@ -30,12 +28,12 @@ namespace CirrusWebApp.Data.Services
 
         public async Task AddUser(Models.User User)
         {
-            await CosmosUserContainer.CreateItemAsync(User);
+            await CosmosUserContainer.CreateItemAsync(User, new PartitionKey(User.id));
         }
 
-        public async Task<Models.User> GetUser(Models.User User)
+        public async Task<Models.User> GetUser(string UserId)
         {
-            var queryText = "SELECT * FROM c WHERE c.id = '" + User.id + "'";
+            var queryText = "SELECT * FROM c WHERE c.id = '" + UserId + "'";
             QueryDefinition queryDefinition = new (queryText);
             FeedIterator<Models.User> queryResultIterator = CosmosUserContainer.GetItemQueryIterator<Models.User>(queryDefinition);
 
@@ -49,9 +47,35 @@ namespace CirrusWebApp.Data.Services
             return null;
         }
 
+        public async Task<List<File>> GetFiles(string UserId)
+        {
+            var queryText = "SELECT * FROM c WHERE c.userid = '" + UserId + "'";
+            QueryDefinition queryDefinition = new QueryDefinition(queryText);
+            FeedIterator<File> feedIterator = CosmosUserFileContainer.GetItemQueryIterator<File>(queryDefinition);
+
+            List<File> fileResult = new();
+            while (feedIterator.HasMoreResults)
+            {
+                var result = await feedIterator.ReadNextAsync();
+                if (result.Count > 0)
+                {
+                    foreach(File file in result)
+                    {
+                        fileResult.Add(file);
+                    }
+                }
+                else
+                {
+                    continue;
+                }
+                
+            }
+
+            return fileResult.Count > 0 ? fileResult : null;
+        }
         public async Task AddFile(File File)
         {
-            await CosmosUserFileContainer.CreateItemAsync(File);
+            await CosmosUserFileContainer.CreateItemAsync(File, new PartitionKey(File.UserId));
         }
     }
 }
