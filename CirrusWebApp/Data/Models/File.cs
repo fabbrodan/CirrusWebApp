@@ -1,14 +1,16 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CirrusWebApp.Data.Models
 {
     public class File
     {
-        [JsonProperty(PropertyName="userid")]
+        [JsonProperty(PropertyName = "userid")]
         public string UserId { get; set; }
         public string id { get; set; }
         public string FileName { get; set; }
@@ -16,6 +18,6 @@ namespace CirrusWebApp.Data.Models
         public string FileExtension { get; set; }
         public string PrimaryFilePath { get; set; }
         public DateTime LastModified { get; set; }
-        public List<string> Categories { get; set; } = new ();
+        public List<string> Categories { get; set; } = new();
     }
 }

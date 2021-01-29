@@ -103,7 +103,7 @@
             IBrowserFile WebFile = Files[i];
             File CirrusFile = CirrusFiles[i];
             CirrusFile.LastModified = CurrentTimeStampLocalized;
-            CirrusFile.PrimaryFilePath = await DataLakeSevice.UploadFile(WebFile, CirrusFile, UserId);
+            CirrusFile.PrimaryFilePath = await DataLakeSevice.UploadFile(WebFile, CirrusFile);
 
             await CosmosService.AddFile(CirrusFile);
         }

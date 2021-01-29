@@ -77,5 +77,10 @@ namespace CirrusWebApp.Data.Services
         {
             await CosmosUserFileContainer.CreateItemAsync(File, new PartitionKey(File.UserId));
         }
+
+        public async Task DeleteFile(File File)
+        {
+            await CosmosUserFileContainer.DeleteItemAsync<File>(File.id, new PartitionKey(File.UserId));
+        }
     }
 }

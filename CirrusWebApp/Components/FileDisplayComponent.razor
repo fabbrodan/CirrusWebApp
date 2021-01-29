@@ -3,64 +3,118 @@
 @using CirrusWebApp.Data.Services;
 @using Microsoft.AspNetCore.Http;
 @using System.Security.Claims;
+@using System.Net;
 
+@inject IJSRuntime JS
 @inject CosmosDbService CosmosService
+@inject DataLakeSevice DataLakeService
 @inject IHttpContextAccessor HttpContextAccessor
 @inject AppState AppState
+@inject Blazored.Localisation.Services.IBrowserDateTimeProvider BrowserDateTimeProvider
 
 @implements IDisposable
 
-    @if (UserFiles is null)
-    {
-        <div class="spinner-border"></div>
-    }
-    else
-    {
-        <table class="table">
-            <thead>
+@if (UserFiles is null)
+{
+    <div class="spinner-border"></div>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <td colspan="4">
+                    <span class="float-left">
+                        <button class="btn btn-dark" @onclick="EventArgs => { OnDownload(); }">Download</button>
+                        <button class="pl-3 btn btn-danger" @onclick="EventArgs => { OnDelete(); }">Delete</button>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <th></th>
+                <th scope="col">File Name:</th>
+                <th scope="col">Last modified:</th>
+                <th scope="col">Categories</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (File file in UserFiles)
+            {
                 <tr>
-                    <th scope="col">File Name:</th>
-                    <th scope="col">Last modified:</th>
-                    <th scope="col">Categories</th>
-                    <th scope="col"></th>
-                    <th scope="col"></th>
+                    <th scope="row"><input type="checkbox" @onchange="ChangeEventArgs => { OnChecked(file, ChangeEventArgs); }" /></th>
+                    <td>@file.FileTitle</td>
+                    <td>@file.LastModified</td>
+                    <td>
+                        @foreach (string category in file.Categories)
+                        {
+                            <p>@category</p>
+                        }
+                    </td>
                 </tr>
-            </thead>
-            <tbody>
-                @foreach (File file in UserFiles)
-                {
-                    <tr>
-                        <th scope="row">@file.FileTitle</th>
-                        <td>@file.LastModified</td>
-                        <td>@file.Categories</td>
-                        <td>
-                            <button class="btn btn-dark">Download</button>
-                        </td>
-                        <td>
-                            <button class="btn btn-danger">Delete</button>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    }
+            }
+        </tbody>
+    </table>
+}
 
-        @code {
+@code {
 
     private List<File> UserFiles;
-        string UserId;
+    string UserId;
+    List<File> SelectedFiles = new List<File>();
+    DateTime CurrentTimeStampLocalized;
 
-        protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        var browserDateTime = await BrowserDateTimeProvider.GetInstance();
+        CurrentTimeStampLocalized = browserDateTime.Now;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        AppState.OnChange += StateHasChanged;
+
+        UserId = HttpContextAccessor.HttpContext.User.Claims.Where(u => u.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier").FirstOrDefault().Value;
+        UserFiles = await CosmosService.GetFiles(UserId);
+        base.OnInitialized();
+    }
+
+    void OnChecked(File file, object CheckedEvent)
+    {
+        if (CheckedEvent is ChangeEventArgs e)
         {
-            AppState.OnChange += StateHasChanged;
-
-            UserId = HttpContextAccessor.HttpContext.User.Claims.Where(u => u.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier").FirstOrDefault().Value;
-            UserFiles = await CosmosService.GetFiles(UserId);
-            base.OnInitialized();
+            if ((bool)e.Value)
+            {
+                SelectedFiles.Add(file);
+            }
+            else
+            {
+                SelectedFiles.Remove(file);
+            }
         }
+    }
 
-        public void Dispose()
+    async Task OnDelete()
+    {
+        foreach (File file in SelectedFiles)
         {
-            AppState.OnChange -= StateHasChanged;
+            await DataLakeService.DeleteFile(file);
+            await CosmosService.DeleteFile(file);
         }
-        }
+    }
+
+    async Task OnDownload()
+    {
+        var fileStream = await DataLakeService.DownloadFiles(SelectedFiles);
+        string b64String = Convert.ToBase64String(fileStream.ToArray());
+        
+        await JS.InvokeVoidAsync(
+            "BlazorFileSaver.saveAsBase64",
+            CurrentTimeStampLocalized + "-cirrus.zip", b64String, "application/zip");
+    }
+
+    public void Dispose()
+    {
+        AppState.OnChange -= StateHasChanged;
+    }
+
+}
