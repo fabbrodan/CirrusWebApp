@@ -4,36 +4,46 @@
 
 @inject PasswordHashService PasswordService
 @inject NavigationManager NavManager
-
-<NavLink class="nav-link" href="/LoginCallGoogle">
-    <span class="oi oi-account-login" aria-hidden="true"></span> Sign In with Google
-</NavLink>
-<div>
-    <EditForm Model="@SignInUser" OnSubmit="Submit">
-        <ValidationSummary />
-        <div class="form-control">
-            <InputText @bind-Value="SignInUser.Email" placeholder="Email" />
+    <div class="container">
+        <div class="row">
+            <div class="col-4 offset-4">
+                <NavLink class="nav-link" href="/LoginCallGoogle">
+                    <span class="oi oi-account-login" aria-hidden="true"></span> Sign In with Google
+                </NavLink>
+            </div>
         </div>
-        <div class="form-control">
-            <InputText @bind-Value="SignInUser.Password" placeholder="Password" type="password" />
-        </div>
-        <div class="form-control">
-            <InputCheckbox @bind-Value="PersistentCookie" />
-            <label>Remember Me</label>
-        </div>
-        <button type="submit">Sign In</button>
-    </EditForm>
-</div>
-<div>
-    <a href="/SignUp"><h4>Sign Up here!</h4></a>
-</div>
-@code {
 
-    User SignInUser = new User();
-    bool PersistentCookie;
+        <div class="row p-3">
+            <div class="p-1 col-4 offset-4 border border-dark rounded">
+                <EditForm Model="@SignInUser" OnSubmit="Submit">
+                    <ValidationSummary />
+                    <div>
+                        <InputText @bind-Value="SignInUser.Email" placeholder="Email" />
+                    </div>
+                    <div>
+                        <InputText @bind-Value="SignInUser.Password" placeholder="Password" type="password" />
+                    </div>
+                    <div>
+                        <InputCheckbox @bind-Value="PersistentCookie" />
+                        <label>Remember Me</label>
+                    </div>
+                    <button class="btn btn-dark" type="submit">Sign In</button>
+                </EditForm>
+            </div>
+        </div>
+        <div class="row pt-5">
+            <div class="col-4 offset-4">
+                <a href="/SignUp"><h4>Sign Up here!</h4></a>
+            </div>
+        </div>
+    </div>
+    @code {
 
-    public void Submit()
-    {
-        NavManager.NavigateTo($"/LoginCallNative/{SignInUser.Email}/{SignInUser.Password}/{PersistentCookie}", true);
+        User SignInUser = new User();
+        bool PersistentCookie;
+
+        public void Submit()
+        {
+            NavManager.NavigateTo($"/LoginCallNative/{SignInUser.Email}/{SignInUser.Password}/{PersistentCookie}", true);
+        }
     }
-}

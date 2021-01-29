@@ -20,7 +20,7 @@
 }
 else
 {
-    <table class="table">
+    /*<table class="table">
         <thead>
             <tr>
                 <td colspan="4">
@@ -53,28 +53,52 @@ else
                 </tr>
             }
         </tbody>
-    </table>
+    </table>*/
+    @foreach(string Category in Categories)
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <td>
+                        @Category
+                    </td>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach(File file in UserFiles.Where(f => f.Categories.Contains(Category)))
+                {
+                <tr>
+                    <th scope="row"><input type="checkbox" @onchange="ChangeEventArgs => { OnChecked(file, ChangeEventArgs); }" /></th>
+                    <td>@file.FileTitle</td>
+                    <td>@file.LastModified</td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    }
 }
 
 @code {
 
     private List<File> UserFiles;
+    private List<string> Categories;
     string UserId;
     List<File> SelectedFiles = new List<File>();
     DateTime CurrentTimeStampLocalized;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        AppState.OnChange += StateHasChanged;
         var browserDateTime = await BrowserDateTimeProvider.GetInstance();
         CurrentTimeStampLocalized = browserDateTime.Now;
     }
 
     protected override async Task OnInitializedAsync()
     {
-        AppState.OnChange += StateHasChanged;
 
         UserId = HttpContextAccessor.HttpContext.User.Claims.Where(u => u.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier").FirstOrDefault().Value;
         UserFiles = await CosmosService.GetFiles(UserId);
+        Categories = UserFiles.GroupBy(c => c.Categories.Distinct()).SelectMany(c => c.Key).ToList();
         base.OnInitialized();
     }
 
@@ -106,7 +130,7 @@ else
     {
         var fileStream = await DataLakeService.DownloadFiles(SelectedFiles);
         string b64String = Convert.ToBase64String(fileStream.ToArray());
-        
+
         await JS.InvokeVoidAsync(
             "BlazorFileSaver.saveAsBase64",
             CurrentTimeStampLocalized + "-cirrus.zip", b64String, "application/zip");

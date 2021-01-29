@@ -40,7 +40,7 @@ namespace CirrusWebApp.Data.Services
                 FileClient = DirectoryClient.CreateSubDirectoryAsync(Category).Result.Value.CreateFileAsync(CirrusFile.FileName).Result.Value;
                 using (var MS = new MemoryStream())
                 {
-                    await WebFile.OpenReadStream().CopyToAsync(MS);
+                    await WebFile.OpenReadStream(10485760).CopyToAsync(MS);
                     MS.Position = 0;
                     await FileClient.AppendAsync(MS, 0);
                     await FileClient.FlushAsync(position: MS.Length);
