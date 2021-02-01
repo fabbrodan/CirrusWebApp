@@ -5,14 +5,6 @@
 @inject PasswordHashService PasswordService
 @inject NavigationManager NavManager
     <div class="container">
-        <div class="row">
-            <div class="col-4 offset-4">
-                <NavLink class="nav-link" href="/LoginCallGoogle">
-                    <span class="oi oi-account-login" aria-hidden="true"></span> Sign In with Google
-                </NavLink>
-            </div>
-        </div>
-
         <div class="row p-3">
             <div class="p-1 col-4 offset-4 border border-dark rounded">
                 <EditForm Model="@SignInUser" OnSubmit="Submit">
@@ -31,9 +23,16 @@
                 </EditForm>
             </div>
         </div>
-        <div class="row pt-5">
-            <div class="col-4 offset-4">
-                <a href="/SignUp"><h4>Sign Up here!</h4></a>
+        <div class="row p-3">
+            <div class="col-3 offset-3">
+                <NavLink class="nav-link" href="/LoginCallGoogle">
+                    <span class="oi oi-account-login" aria-hidden="true"></span> Sign In with Google
+                </NavLink>
+            </div>
+            <div class="col-3">
+                <NavLink class="nav-link" href="/SignUp">
+                    <span class="oi oi-document" aria-hidden="true"></span> Sign up!
+                </NavLink>
             </div>
         </div>
     </div>

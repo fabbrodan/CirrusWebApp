@@ -75,7 +75,23 @@ namespace CirrusWebApp.Data.Services
         }
         public async Task AddFile(File File)
         {
-            await CosmosUserFileContainer.CreateItemAsync(File, new PartitionKey(File.UserId));
+            var queryText = "SELECT * FROM c WHERE c.userid = '" + File.UserId + "' AND c.FileName = '" + File.FileName + "'";
+            QueryDefinition queryDefinition = new QueryDefinition(queryText);
+            FeedIterator<File> feedIterator = CosmosUserFileContainer.GetItemQueryIterator<File>(queryDefinition);
+            if (feedIterator.HasMoreResults)
+            {
+                var result = await feedIterator.ReadNextAsync();
+                if (result.Count > 0)
+                {
+                    File updateFile = result.SingleOrDefault();
+                    updateFile.LastModified = File.LastModified;
+                    await CosmosUserFileContainer.UpsertItemAsync(updateFile);
+                }
+            }
+            else
+            {
+                await CosmosUserFileContainer.CreateItemAsync(File, new PartitionKey(File.UserId));
+            }
         }
 
         public async Task DeleteFile(File File)
