@@ -1,0 +1,83 @@
+﻿@using Microsoft.AspNetCore.Http;
+@using System.Security.Claims;
+@using System.Net;
+@using CirrusWebApp.Data;
+
+@inject IJSRuntime JS
+@inject CosmosDbService CosmosService
+@inject DataLakeSevice DataLakeService
+@inject IHttpContextAccessor HttpContextAccessor
+@inject AppState AppState
+@inject Blazored.Localisation.Services.IBrowserDateTimeProvider BrowserDateTimeProvider
+
+<table class="table">
+    <tbody>
+    @foreach (File file in Files)
+    {
+        <tr class="d-flex">
+            <th scope="row" class="col-3"><input type="checkbox" @onchange="ChangeEventArgs => { OnChecked(file, ChangeEventArgs); }" /></th>
+            <td class="col-6">@file.FileTitle</td>
+            <td class="col-6">@file.LastModified</td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+@code {
+    [Parameter]
+    public List<File> Files { get; set; }
+    [Parameter]
+    public string Category { get; set; }
+    [Parameter]
+    public string UserId { get; set; }
+
+
+    List<File> SelectedFiles = new List<File>();
+    DateTime CurrentTimeStampLocalized;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        AppState.OnChange += StateHasChanged;
+        var browserDateTime = await BrowserDateTimeProvider.GetInstance();
+        CurrentTimeStampLocalized = browserDateTime.Now;
+    }
+
+    void OnChecked(File file, object CheckedEvent)
+    {
+        if (CheckedEvent is ChangeEventArgs e)
+        {
+            if ((bool)e.Value)
+            {
+                SelectedFiles.Add(file);
+            }
+            else
+            {
+                SelectedFiles.Remove(file);
+            }
+        }
+    }
+
+    async Task OnDelete()
+    {
+        foreach (File file in SelectedFiles)
+        {
+            await DataLakeService.DeleteFile(file);
+            await CosmosService.DeleteFile(file);
+        }
+    }
+
+    async Task OnDownload()
+    {
+        var fileStream = await DataLakeService.DownloadFiles(SelectedFiles);
+        string b64String = Convert.ToBase64String(fileStream.ToArray());
+
+        await JS.InvokeVoidAsync(
+            "BlazorFileSaver.saveAsBase64",
+            CurrentTimeStampLocalized + "-cirrus.zip", b64String, "application/zip");
+    }
+
+    public void Dispose()
+    {
+        AppState.OnChange -= StateHasChanged;
+    }
+}

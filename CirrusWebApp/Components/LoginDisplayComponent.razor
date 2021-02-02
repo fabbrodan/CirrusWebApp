@@ -5,15 +5,15 @@
 
 @if (User.Identity.Name != null)
 {
-<div class="float-right pr-5">
-    <b class="pr-2">@Firstname @Lastname</b>
+<div class="bg-dark float-right pr-5" style="width: 100%;">
+    <b class="pr-2 text-white">@Firstname @Lastname</b>
     @if (Avatar != null)
     {
         <img style="width: 15px; height: 15px;" src="@Avatar" />
     }
     <AuthorizeView>
         <Authorized>
-            <a href="/LogoutCall">Sign Out</a>
+            <a class="text-white" href="/LogoutCall">Sign Out</a>
         </Authorized>
     </AuthorizeView>
 </div>

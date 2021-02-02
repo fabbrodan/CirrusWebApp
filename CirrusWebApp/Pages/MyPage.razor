@@ -1,38 +1,6 @@
 ﻿@page "/MyPage"
 
-<div class="accordion" id="myPageAccordion">
-
-    <div class="card">
-        <div class="card-header" id="myFilesHeading">
-            <h2 class="mb-0">
-                <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#myFiles" aria-expanded="true" aria-controls="myFiles">
-                    My Files
-                </button>
-            </h2>
-        </div>
-
-        <div id="myFiles" class="collapse show" aria-labelledby="myFilesHeading" data-parent="#myPageAccordion">
-            <div class="card-body">
-                <FileDisplayComponent />
-            </div>
-        </div>
-    </div>
-    <div class="card">
-        <div class="card-header" id="uploadFilesHeader">
-            <h2 class="mb-0">
-                <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#uploadFiles" aria-expanded="false" aria-controls="uploadFiles">
-                    Upload Files
-                </button>
-            </h2>
-        </div>
-        <div id="uploadFiles" class="collapse" aria-labelledby="uploadFilesHeader" data-parent="#myPageAccordion">
-            <div class="card-body">
-                <FileUploadComponent />
-            </div>
-        </div>
-    </div>
-
-</div>
+<FileDisplayComponent />
 
 @code {      
 

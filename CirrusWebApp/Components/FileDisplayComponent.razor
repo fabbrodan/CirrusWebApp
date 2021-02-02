@@ -1,111 +1,30 @@
-﻿@using CirrusWebApp.Data;
-@using CirrusWebApp.Data.Models;
-@using CirrusWebApp.Data.Services;
-@using Microsoft.AspNetCore.Http;
-@using System.Security.Claims;
-@using System.Net;
+﻿@using Microsoft.AspNetCore.Http;
 
-@inject IJSRuntime JS
 @inject CosmosDbService CosmosService
-@inject DataLakeSevice DataLakeService
 @inject IHttpContextAccessor HttpContextAccessor
-@inject AppState AppState
-@inject Blazored.Localisation.Services.IBrowserDateTimeProvider BrowserDateTimeProvider
 
-@implements IDisposable
-
-@if (UserFiles is null)
-{
-    <div class="spinner-border"></div>
-}
-else
-{
-    /*<table class="table">
-        <thead>
-            <tr>
-                <td colspan="4">
-                    <span class="float-left">
-                        <button class="btn btn-dark" @onclick="EventArgs => { OnDownload(); }">Download</button>
-                        <button class="pl-3 btn btn-danger" @onclick="EventArgs => { OnDelete(); }">Delete</button>
-                    </span>
-                </td>
-            </tr>
-            <tr>
-                <th></th>
-                <th scope="col">File Name:</th>
-                <th scope="col">Last modified:</th>
-                <th scope="col">Categories</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (File file in UserFiles)
-            {
-                <tr>
-                    <th scope="row"><input type="checkbox" @onchange="ChangeEventArgs => { OnChecked(file, ChangeEventArgs); }" /></th>
-                    <td>@file.FileTitle</td>
-                    <td>@file.LastModified</td>
-                    <td>
-                        @foreach (string category in file.Categories)
-                        {
-                            <p>@category</p>
-                        }
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>*/
 <div class="row">
     @foreach (string Category in Categories)
     {
-        <div class="col-lg-12 col-xl-6 col-sm-12 col-md-12 border">
-            <table class="table">
-                <thead>
-                    <tr class="font-weight-bold d-flex">
-                        <td class="col-3">
-                            @Category
-                        </td>
-                        <td class="col-5">
-                            File Name
-                        </td>
-                        <td class="col-4">
-                            Last Modified
-                        </td>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (File file in UserFiles.Where(f => f.Categories.Contains(Category)))
-                    {
-                        <tr class="d-flex">
-                            <th scope="row" class="col-3"><input type="checkbox" @onchange="ChangeEventArgs => { OnChecked(file, ChangeEventArgs); }" /></th>
-                            <td class="col-5">@file.FileTitle</td>
-                            <td class="col-4">@file.LastModified</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+        <div class="col-xl-6 col-lg-12 col-md-12 col-sm-12 p-3">
+            <div class="card bg-dark text-white border-light">
+                <img class="category-card card-img" src="resources/fileicon6.jpg" alt="file-bg-img" />
+                <div class="card-img-overlay category-card-overlay">
+                    <h4 class="card-title">@Category</h4>
+                </div>
+            </div>
         </div>
     }
 </div>
-}
 
 @code {
 
-    private List<File> UserFiles;
     private List<string> Categories = new List<string>();
+    private List<File> UserFiles;
     string UserId;
-    List<File> SelectedFiles = new List<File>();
-    DateTime CurrentTimeStampLocalized;
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        AppState.OnChange += StateHasChanged;
-        var browserDateTime = await BrowserDateTimeProvider.GetInstance();
-        CurrentTimeStampLocalized = browserDateTime.Now;
-    }
 
     protected override async Task OnInitializedAsync()
     {
-
         UserId = HttpContextAccessor.HttpContext.User.Claims.Where(u => u.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier").FirstOrDefault().Value;
         UserFiles = await CosmosService.GetFiles(UserId);
         foreach (File file in UserFiles)
@@ -118,46 +37,6 @@ else
                 }
             }
         }
-        base.OnInitialized();
+        await base.OnInitializedAsync();
     }
-
-    void OnChecked(File file, object CheckedEvent)
-    {
-        if (CheckedEvent is ChangeEventArgs e)
-        {
-            if ((bool)e.Value)
-            {
-                SelectedFiles.Add(file);
-            }
-            else
-            {
-                SelectedFiles.Remove(file);
-            }
-        }
-    }
-
-    async Task OnDelete()
-    {
-        foreach (File file in SelectedFiles)
-        {
-            await DataLakeService.DeleteFile(file);
-            await CosmosService.DeleteFile(file);
-        }
-    }
-
-    async Task OnDownload()
-    {
-        var fileStream = await DataLakeService.DownloadFiles(SelectedFiles);
-        string b64String = Convert.ToBase64String(fileStream.ToArray());
-
-        await JS.InvokeVoidAsync(
-            "BlazorFileSaver.saveAsBase64",
-            CurrentTimeStampLocalized + "-cirrus.zip", b64String, "application/zip");
-    }
-
-    public void Dispose()
-    {
-        AppState.OnChange -= StateHasChanged;
-    }
-
 }
