@@ -10,18 +10,68 @@
 @inject AppState AppState
 @inject Blazored.Localisation.Services.IBrowserDateTimeProvider BrowserDateTimeProvider
 
-<table class="table">
-    <tbody>
-    @foreach (File file in Files)
-    {
-        <tr class="d-flex">
-            <th scope="row" class="col-3"><input type="checkbox" @onchange="ChangeEventArgs => { OnChecked(file, ChangeEventArgs); }" /></th>
-            <td class="col-6">@file.FileTitle</td>
-            <td class="col-6">@file.LastModified</td>
-        </tr>
-    }
-    </tbody>
-</table>
+<div>
+    <div class="row">
+        <div class="col-3">
+            <button @onclick="GoBackClicked" type="button" class="btn btn-dark">
+                <span class="oi oi-arrow-left" aria-hidden="true"></span>
+            </button>
+        </div>
+        <div class="col9 text-center">
+            <h3>@Category</h3>
+        </div>
+    </div>
+    <div class="row">
+        <table class="table">
+            <thead>
+                <tr class="d-flex">
+                    <th class="col-1">
+                        <input type="checkbox" />
+                    </th>
+                    <th class="col-4">File Name:</th>
+                    <th class="col-3">File Type:</th>
+                    <th class="col-4">Last Modified:</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (File file in Files)
+                {
+                    <tr class="d-flex">
+                        <td class="col-1">
+                            <input type="checkbox" @onchange="ChangeEventArgs => { OnChecked(file, ChangeEventArgs); }" />
+                        </td>
+                        <td class="col-4">@file.FileTitle</td>
+                        <td class="col-3">@file.FileExtension</td>
+                        <td class="col-4">@file.LastModified</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="row">
+        <div class="col-1">
+            <button @onclick="OnDelete" type="button" class="btn btn-danger">
+                <span class="oi oi-trash" aria-hidden="true"></span>
+            </button>
+        </div>
+        <div class="col-1">
+            <button @onclick="OnDownload" type="button" class="btn btn-secondary">
+                <span class="oi oi-cloud-download" aria-hidden="true"></span>
+            </button>
+        </div>
+        <div class="col-1">
+            <button @onclick="(() => { ShowUpload = !ShowUpload; })" type="button" class="btn btn-dark">
+                <span class="oi oi-cloud-upload" aria-hidden="true"></span>
+            </button>
+        </div>
+        @if (ShowUpload)
+        {
+            <div class="col-3 fade-in">
+                <FileUploadComponent />
+            </div>
+        }
+    </div>
+</div>
 
 @code {
     [Parameter]
@@ -30,6 +80,10 @@
     public string Category { get; set; }
     [Parameter]
     public string UserId { get; set; }
+    [Parameter]
+    public Action<string> CategoryChanged { get; set; }
+
+    private bool ShowUpload = false;
 
 
     List<File> SelectedFiles = new List<File>();
@@ -40,6 +94,11 @@
         AppState.OnChange += StateHasChanged;
         var browserDateTime = await BrowserDateTimeProvider.GetInstance();
         CurrentTimeStampLocalized = browserDateTime.Now;
+    }
+
+    void GoBackClicked()
+    {
+        CategoryChanged?.Invoke(null);
     }
 
     void OnChecked(File file, object CheckedEvent)
@@ -63,6 +122,7 @@
         {
             await DataLakeService.DeleteFile(file);
             await CosmosService.DeleteFile(file);
+            Files.Remove(file);
         }
     }
 

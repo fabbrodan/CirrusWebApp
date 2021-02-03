@@ -3,40 +3,76 @@
 @inject CosmosDbService CosmosService
 @inject IHttpContextAccessor HttpContextAccessor
 
-<div class="row">
-    @foreach (string Category in Categories)
-    {
-        <div class="col-xl-6 col-lg-12 col-md-12 col-sm-12 p-3">
-            <div class="card bg-dark text-white border-light">
-                <img class="category-card card-img" src="resources/fileicon6.jpg" alt="file-bg-img" />
-                <div class="card-img-overlay category-card-overlay">
-                    <h4 class="card-title">@Category</h4>
+@if (UserFiles is null)
+{
+    <div class="d-flex justify-content-center">
+        <div class="spinner-grow" style="width: 200px; height: 200px;">
+            <span class="sr-only">Loading...</span>
+        </div>
+    </div>
+}
+
+@if (SelectedCategory is null)
+{
+    <div class="row card-group">
+        @foreach (string Category in Categories)
+        {
+            <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12 category-card">
+                <div @onclick="(() => DisplayComponent(Category))" class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">@Category</h4>
+                    </div>
+                    <img class="card-img" src="resources/fileicon6.jpg" alt="file-bg-img" />
                 </div>
             </div>
-        </div>
-    }
-</div>
+        }
+    </div>
+}
+else
+{
+    <FileCategoryComponent @ref="@CategoryComponent" Files="@CategoryFiles" UserId="@UserId" @bind-Category="@SelectedCategory" />
+}
 
 @code {
 
     private List<string> Categories = new List<string>();
-    private List<File> UserFiles;
-    string UserId;
+        private List<File> CategoryFiles;
+        private List<File> UserFiles;
+        private string UserId;
+        private string SelectedCategory;
+        FileCategoryComponent CategoryComponent = new FileCategoryComponent();
 
-    protected override async Task OnInitializedAsync()
-    {
-        UserId = HttpContextAccessor.HttpContext.User.Claims.Where(u => u.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier").FirstOrDefault().Value;
-        UserFiles = await CosmosService.GetFiles(UserId);
-        foreach (File file in UserFiles)
+        protected override void OnAfterRender(bool firstRender)
         {
-            foreach (string category in file.Categories)
+            CategoryComponent.CategoryChanged += NullifySelectedCategory;
+        }
+
+        protected override async Task OnInitializedAsync()
+        {
+            UserId = HttpContextAccessor.HttpContext.User.Claims.Where(u => u.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier").FirstOrDefault().Value;
+            UserFiles = await CosmosService.GetFiles(UserId);
+            foreach (File file in UserFiles)
             {
-                if (!Categories.Contains(category))
+                foreach (string category in file.Categories)
                 {
-                    Categories.Add(category);
+                    if (!Categories.Contains(category))
+                    {
+                        Categories.Add(category);
+                    }
                 }
             }
+            await base.OnInitializedAsync();
         }
-        await base.OnInitializedAsync();
-    }
-}
+
+        public void DisplayComponent(string Category)
+        {
+            SelectedCategory = Category;
+            CategoryFiles = UserFiles.Where(c => c.Categories.Contains(Category)).ToList();
+        }
+
+        public void NullifySelectedCategory(string category)
+        {
+            SelectedCategory = null;
+            StateHasChanged();
+        }
+        }

@@ -32,32 +32,81 @@ a, .btn-link {
 
 .category-card {
     opacity: 1;
-    display: block;
-    max-height: 300px;
+    padding-bottom: 10px;
+    padding-top: 10px;
+    height: auto;
     max-width: 300px;
     transition: .5s ease;
+    border-radius: 25px;
 }
 
 .category-card img {
     position: center;
 }
 
-.category-card-overlay {
-    transition: .5s ease;
-    opacity: 0;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    -ms-transform: translate(-50%, -50%);
-}
-
 .category-card:hover {
-    opacity: 0.3;
+    border: solid 2px black;
+    transform: scale(1.05, 1.05);
 }
 
-.category-card-overlay:hover {
-    opacity: 1;
+.fade-in {
+    animation: fadeIn ease 1s;
+    -webkit-animation: fadeIn ease 1s;
+    -moz-animation: fadeIn 1s;
+    -o-animation: fadeIn 1s;
+}
+
+@keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}
+@-moz-keyframes fadeIn {
+    0% { opacity: 0; }
+
+    100% { opacity: 1; }
+}
+
+@-webkit-keyframes fadeIn {
+    0% { opacity: 0; }
+
+    100% { opacity: 1; }
+}
+
+@-o-keyframes fadeIn {
+    0% { opacity: 0; }
+
+    100% { opacity: 1; }
+}
+
+.fade-out {
+    animation: fadeOut ease 1s;
+    -webkit-animation: fadeOut ease 1s;
+    -moz-animation: fadeOut 1s;
+    -o-animation: fadeOut 1s;
+}
+
+@keyframes fadeOut {
+    100% { opacity: 0; }
+
+    0% { opacity: 1; }
+}
+
+@-moz-keyframes fadeOut {
+    100% { opacity: 0; }
+
+    0% { opacity: 1; }
+}
+
+@-webkit-keyframes fadeOut {
+    100% { opacity: 0; }
+
+    0% { opacity: 1; }
+}
+
+@-o-keyframes fadeOut {
+    100% { opacity: 0; }
+
+    0% { opacity: 1; }
 }
 
 #blazor-error-ui {
