@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace CirrusWebApp.Data.Models
 {
-    public class File
+    public class File : IComparable, IEquatable<File>
     {
         [JsonProperty(PropertyName = "userid")]
         public string UserId { get; set; }
@@ -19,5 +19,27 @@ namespace CirrusWebApp.Data.Models
         public string PrimaryFilePath { get; set; }
         public DateTime LastModified { get; set; }
         public List<string> Categories { get; set; } = new();
+
+        public int CompareTo(object obj)
+        {
+            if (obj is File f)
+            {
+                if (this.FileName == f.FileName && this.FileExtension == f.FileExtension)
+                {
+                    return 1;
+                }
+                return 0;
+            }
+            return -1;
+        }
+
+        public bool Equals(File other)
+        {
+            if (this.FileName == other.FileName && this.FileExtension == other.FileExtension)
+            {
+                return true;
+            }
+            return false;
+        }
     }
 }

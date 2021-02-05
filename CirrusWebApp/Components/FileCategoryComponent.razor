@@ -2,12 +2,11 @@
 @using System.Security.Claims;
 @using System.Net;
 @using CirrusWebApp.Data;
+@using System.Text.RegularExpressions;
 
 @inject IJSRuntime JS
 @inject CosmosDbService CosmosService
 @inject DataLakeSevice DataLakeService
-@inject IHttpContextAccessor HttpContextAccessor
-@inject AppState AppState
 @inject Blazored.Localisation.Services.IBrowserDateTimeProvider BrowserDateTimeProvider
 
 <div>
@@ -26,7 +25,7 @@
             <thead>
                 <tr class="d-flex">
                     <th class="col-1">
-                        <input type="checkbox" />
+                        <input type="checkbox" @onclick="OnSelectAll"/>
                     </th>
                     <th class="col-4">File Name:</th>
                     <th class="col-3">File Type:</th>
@@ -38,7 +37,7 @@
                 {
                     <tr class="d-flex">
                         <td class="col-1">
-                            <input type="checkbox" @onchange="ChangeEventArgs => { OnChecked(file, ChangeEventArgs); }" />
+                            <input type="checkbox" @onchange="ChangeEventArgs => { OnChecked(file, ChangeEventArgs); }" class="fileChkbox"/>
                         </td>
                         <td class="col-4">@file.FileTitle</td>
                         <td class="col-3">@file.FileExtension</td>
@@ -67,7 +66,31 @@
         @if (ShowUpload)
         {
             <div class="col-3 fade-in">
-                <FileUploadComponent />
+                <EditForm EditContext="Context" OnValidSubmit="Upload">
+                    <div class="form-group">
+                        <InputFile id="fileSelect" OnChange="FileAdd" Multiple style="display: none" />
+                        <button class="btn btn-dark btn-outline-light" type="button" onclick="document.getElementById('fileSelect').click();">Browse...</button>
+                    </div>
+                    <div class="form-group">
+                        @if (CirrusFiles != null)
+                        {
+                            foreach (File file in CirrusFiles)
+                            {
+                                <div class="row">
+                                    <div class="col-6">
+                                        <p class="p-3">@file.FileTitle</p>
+                                    </div>
+                                    <div class="col-6">
+                                        <input @onchange="(ChangeEventArgs _event) => SetCategories(_event, file.FileName)" />
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+                    <div class="form-group">
+                        <button class="btn btn-success" type="submit">Upload</button>
+                    </div>
+                </EditForm>
             </div>
         }
     </div>
@@ -85,15 +108,70 @@
 
     private bool ShowUpload = false;
 
+    private IReadOnlyList<IBrowserFile> UploadFiles = new List<IBrowserFile>();
+    private List<File> CirrusFiles;
+    private EditContext Context;
 
     List<File> SelectedFiles = new List<File>();
     DateTime CurrentTimeStampLocalized;
 
+    protected override void OnInitialized()
+    {
+        Context = new EditContext(UploadFiles);
+        base.OnInitialized();
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        AppState.OnChange += StateHasChanged;
         var browserDateTime = await BrowserDateTimeProvider.GetInstance();
         CurrentTimeStampLocalized = browserDateTime.Now;
+    }
+
+    private void FileAdd(InputFileChangeEventArgs e)
+    {
+        UploadFiles = e.GetMultipleFiles();
+        CirrusFiles = new List<File>();
+        foreach (IBrowserFile file in UploadFiles)
+        {
+            Regex regex = new Regex(@"[^A-ZÅÄÖa-zåäö0-9_\-\p{L}]");
+            string FileTitle = file.Name.Substring(0, 0 + file.Name.LastIndexOf("."));
+            FileTitle = regex.Replace(FileTitle, " ");
+            CirrusFiles.Add(new File
+            {
+                UserId = UserId,
+                id = Guid.NewGuid().ToString(),
+                FileName = file.Name,
+                FileTitle = FileTitle,
+                FileExtension = file.Name.Substring(file.Name.LastIndexOf(".") + 1)
+            });
+        }
+    }
+
+    private void SetCategories(ChangeEventArgs e, string fileName)
+    {
+        List<string> Categories = e.Value.ToString().Replace(" ", "").Split(";").ToList<string>();
+        CirrusFiles.Where<File>(f => f.FileName == fileName).FirstOrDefault().Categories = Categories;
+    }
+
+    private async Task Upload()
+    {
+        for (int i = 0; i < UploadFiles.Count; i++)
+        {
+            IBrowserFile WebFile = UploadFiles[i];
+            File CirrusFile = CirrusFiles[i];
+            CirrusFile.LastModified = CurrentTimeStampLocalized;
+            CirrusFile.PrimaryFilePath = await DataLakeService.UploadFile(WebFile, CirrusFile);
+
+            await CosmosService.AddFile(CirrusFile);
+            var existingFile = Files.FirstOrDefault(f => f.Equals(CirrusFile));
+            if (existingFile is not null)
+            {
+                Files.Remove(existingFile);
+            }
+
+            Files.Add(CirrusFile);
+            ShowUpload = false;
+        }
     }
 
     void GoBackClicked()
@@ -128,6 +206,10 @@
 
     async Task OnDownload()
     {
+        if (SelectedFiles.Count < 1)
+        {
+            return;
+        }
         var fileStream = await DataLakeService.DownloadFiles(SelectedFiles);
         string b64String = Convert.ToBase64String(fileStream.ToArray());
 
@@ -136,8 +218,19 @@
             CurrentTimeStampLocalized + "-cirrus.zip", b64String, "application/zip");
     }
 
-    public void Dispose()
+    async Task OnSelectAll()
     {
-        AppState.OnChange -= StateHasChanged;
+        if (SelectedFiles.Count == 0)
+        {
+            foreach(File file in Files)
+            {
+                SelectedFiles.Add(file);
+            }
+        }
+        else
+        {
+            SelectedFiles.Clear();
+        }
+        await JS.InvokeVoidAsync("UpdateBoxes", "fileChkbox");
     }
 }

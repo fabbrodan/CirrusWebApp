@@ -1,9 +1,9 @@
 ﻿@using System.Security.Claims
 @using Microsoft.AspNetCore.Http
 
-@inject IHttpContextAccessor _httpContextAccessor
+@inject AuthenticationStateProvider AuthState
 
-@if (User.Identity.Name != null)
+@if (User != null)
 {
 <div class="bg-dark float-right pr-5" style="width: 100%;">
     <b class="pr-2 text-white">@Firstname @Lastname</b>
@@ -26,24 +26,21 @@
     private string Lastname;
     private string Avatar;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        try
-        {
-            User = _httpContextAccessor.HttpContext.User == null ? null : _httpContextAccessor.HttpContext.User;
-            if (User != null)
-            {
-                Firstname = User.FindFirst(ClaimTypes.GivenName) == null ? "" : User.FindFirst(ClaimTypes.GivenName).Value;
-                Lastname = User.FindFirst(ClaimTypes.Surname) == null ? "" : User.FindFirst(ClaimTypes.Surname).Value;
-                Avatar = User.FindFirst("urn:google:image") == null ? null : User.FindFirst("urn:google:image").Value;
-            }
+        await SetupUser();
+        await base.OnInitializedAsync();
+    }
 
-            base.OnInitialized();
-        }
-        catch (NullReferenceException exc)
+    private async Task SetupUser()
+    {
+        var authState = await AuthState.GetAuthenticationStateAsync();
+        User = authState.User;
+        if (User != null)
         {
-            Console.WriteLine(_httpContextAccessor.HttpContext.User);
-            Console.WriteLine(exc.Message);
+            Firstname = User.FindFirst(ClaimTypes.GivenName) == null ? "" : User.FindFirst(ClaimTypes.GivenName).Value;
+            Lastname = User.FindFirst(ClaimTypes.Surname) == null ? "" : User.FindFirst(ClaimTypes.Surname).Value;
+            Avatar = User.FindFirst("urn:google:image") == null ? null : User.FindFirst("urn:google:image").Value;
         }
     }
 }

@@ -87,10 +87,10 @@ namespace CirrusWebApp.Data.Services
                     updateFile.LastModified = File.LastModified;
                     await CosmosUserFileContainer.UpsertItemAsync(updateFile);
                 }
-            }
-            else
-            {
-                await CosmosUserFileContainer.CreateItemAsync(File, new PartitionKey(File.UserId));
+                else
+                {
+                    await CosmosUserFileContainer.CreateItemAsync(File, new PartitionKey(File.UserId));
+                }
             }
         }
 

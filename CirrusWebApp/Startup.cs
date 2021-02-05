@@ -10,33 +10,46 @@ using CirrusWebApp.Data.Services;
 using Microsoft.AspNetCore.Http;
 using System.Net.Http;
 using Blazored.Localisation;
+using Microsoft.AspNetCore.SignalR;
 
 namespace CirrusWebApp
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
             Configuration = configuration;
+            Environment = env;
         }
 
+        public IWebHostEnvironment Environment { get; }
         public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddHttpContextAccessor();
+            services.AddScoped<HttpContextAccessor>();
+            services.AddHttpClient();
+            services.AddScoped<HttpClient>();
+
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services.AddSingleton<CosmosDbService>();
             services.AddSingleton<PasswordHashService>();
             services.AddSingleton<DataLakeSevice>();
-            services.AddSingleton<AppState>();
 
             services.AddBlazoredLocalisation();
             
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie();
+
+            services.AddSignalR().AddAzureSignalR(options =>
+            {
+                options.ServerStickyMode = Microsoft.Azure.SignalR.ServerStickyMode.Required;
+                options.ConnectionString = "Endpoint=https://cirrus-signalr.service.signalr.net;AccessKey=kaPDOVuQ5frUZ+WUdb6pTVN7VbHNUu3YWkiDIzpkDXg=;Version=1.0;";
+            });
 
             services.AddAuthentication().AddGoogle(o =>
             {
@@ -45,11 +58,6 @@ namespace CirrusWebApp
                 o.ClaimActions.MapJsonKey("urn:google:profile", "link");
                 o.ClaimActions.MapJsonKey("urn:google:image", "picture");
             });
-
-            services.AddHttpContextAccessor();
-            services.AddScoped<HttpContextAccessor>();
-            services.AddHttpClient();
-            services.AddScoped<HttpClient>();
 
             services.AddSingleton(Configuration);
         }

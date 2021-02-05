@@ -1,7 +1,8 @@
 ﻿@using Microsoft.AspNetCore.Http;
+@using System.Security.Claims; 
 
 @inject CosmosDbService CosmosService
-@inject IHttpContextAccessor HttpContextAccessor
+@inject AuthenticationStateProvider AuthState
 
 @if (UserFiles is null)
 {
@@ -36,21 +37,25 @@ else
 @code {
 
     private List<string> Categories = new List<string>();
-        private List<File> CategoryFiles;
-        private List<File> UserFiles;
-        private string UserId;
-        private string SelectedCategory;
-        FileCategoryComponent CategoryComponent = new FileCategoryComponent();
+    private List<File> CategoryFiles;
+    private List<File> UserFiles;
+    private string UserId;
+    private string SelectedCategory;
+    FileCategoryComponent CategoryComponent = new FileCategoryComponent();
 
-        protected override void OnAfterRender(bool firstRender)
-        {
-            CategoryComponent.CategoryChanged += NullifySelectedCategory;
-        }
+    protected override void OnAfterRender(bool firstRender)
+    {
+        CategoryComponent.CategoryChanged += NullifySelectedCategory;;
+    }
 
-        protected override async Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthState.GetAuthenticationStateAsync();
+        var User = authState.User;
+        UserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value is null ? User.FindFirst(ClaimTypes.Name).Value : User.FindFirst(ClaimTypes.NameIdentifier).Value;
+        UserFiles = await CosmosService.GetFiles(UserId);
+        if (UserFiles is not null)
         {
-            UserId = HttpContextAccessor.HttpContext.User.Claims.Where(u => u.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier").FirstOrDefault().Value;
-            UserFiles = await CosmosService.GetFiles(UserId);
             foreach (File file in UserFiles)
             {
                 foreach (string category in file.Categories)
@@ -61,18 +66,19 @@ else
                     }
                 }
             }
-            await base.OnInitializedAsync();
         }
+        await base.OnInitializedAsync();
+    }
 
-        public void DisplayComponent(string Category)
-        {
-            SelectedCategory = Category;
-            CategoryFiles = UserFiles.Where(c => c.Categories.Contains(Category)).ToList();
-        }
+    public void DisplayComponent(string Category)
+    {
+        SelectedCategory = Category;
+        CategoryFiles = UserFiles.Where(c => c.Categories.Contains(Category)).ToList();
+    }
 
-        public void NullifySelectedCategory(string category)
-        {
-            SelectedCategory = null;
-            StateHasChanged();
-        }
-        }
+    public void NullifySelectedCategory(string category)
+    {
+        SelectedCategory = null;
+        StateHasChanged();
+    }
+}
