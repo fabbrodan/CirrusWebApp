@@ -9,9 +9,16 @@
     height: 100%;
 }
 
+.menu-table {
+    display: table;
+}
+
 .sidebar {
     background-image: linear-gradient(to left, rgb(160, 209, 236), rgb(255, 255, 255));
     color: black;
+    position: sticky;
+    top: 0;
+    display: inline-flex;
 }
 
 .top-row {
@@ -46,7 +53,7 @@
         margin-left: 0;
     }
 }
-
+/*
 @media (min-width: 641px) {
     .page {
         flex-direction: row;
@@ -70,3 +77,4 @@
         padding-right: 1.5rem !important;
     }
 }
+    */

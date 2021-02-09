@@ -1,7 +1,7 @@
 @import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
 
 html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family:  'Helvetica Neue', Helvetica, Arial, sans-serif;
     height: 100%;
 }
 
@@ -36,9 +36,11 @@ a, .btn-link {
 }
 
 .main {
-    background-image: url("../resources/cirrus-uncinus-cloud-illustration.png");
+    /*background-image: url("../resources/cirrus-uncinus-cloud-illustration.png");
     background-repeat: no-repeat;
-    background-size: cover;
+    background-position-x: right;
+    background-position-y: bottom;*/
+    background-image: linear-gradient(to bottom, grey, darkgrey);
 }
 .category-card {
     opacity: 1;
@@ -55,7 +57,6 @@ a, .btn-link {
 }
 
 .category-card:hover {
-    border: solid 2px black;
     transform: scale(1.05, 1.05);
 }
 
