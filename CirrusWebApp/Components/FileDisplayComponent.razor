@@ -1,8 +1,10 @@
 ﻿@using Microsoft.AspNetCore.Http;
 @using System.Security.Claims; 
+@using CirrusWebApp.Components;
 
 @inject CosmosDbService CosmosService
 @inject AuthenticationStateProvider AuthState
+@inject DataLakeService DataLakeService
 
 @if (UserFiles is null)
 {
@@ -82,9 +84,11 @@ else
         CategoryFiles = UserFiles.Where(c => c.Categories.Contains(Category)).ToList();
     }
 
-    public void AddCategory()
+    public async Task AddCategory()
     {
-        Console.WriteLine(NewCategory);
+        await DataLakeService.CreateDirectory(NewCategory, UserId);
+        Categories.Add(NewCategory);
+        NewCategory = null;
     }
 
     public void NullifySelectedCategory(string category)

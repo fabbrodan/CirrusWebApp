@@ -38,7 +38,7 @@ namespace CirrusWebApp
             services.AddServerSideBlazor();
             services.AddSingleton<CosmosDbService>();
             services.AddSingleton<PasswordHashService>();
-            services.AddSingleton<DataLakeSevice>();
+            services.AddSingleton<DataLakeService>();
 
             services.AddBlazoredLocalisation();
             

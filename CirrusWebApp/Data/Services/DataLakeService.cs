@@ -15,7 +15,7 @@ using Microsoft.JSInterop;
 
 namespace CirrusWebApp.Data.Services
 {
-    public class DataLakeSevice
+    public class DataLakeService
     {
         private DataLakeServiceClient ServiceClient;
         private StorageSharedKeyCredential SharedKeyCredential;
@@ -24,7 +24,7 @@ namespace CirrusWebApp.Data.Services
         private string AccountName = "cirruscspstorageaccount";
         private string AccountKey = "+s6lLIuOQeL0r8EDK+ctWjJDRFFXT2/xy+d10rlDSv4wXz6MDDjx5ZGWCC8a5dYwQUnonBi6s1RcOLnmloaJNA==";
         private string ContainerUri = "https://cirruscspstorageaccount.dfs.core.windows.net/";
-        public DataLakeSevice()
+        public DataLakeService()
         {
             SharedKeyCredential = new StorageSharedKeyCredential(AccountName, AccountKey);
             ServiceClient = new DataLakeServiceClient(new Uri(ContainerUri), SharedKeyCredential);
@@ -96,6 +96,12 @@ namespace CirrusWebApp.Data.Services
                 return result;
             }
             return null;
+        }
+
+        public async Task CreateDirectory(string DirectoryName, string UserId)
+        {
+            var DirectoryClient = FileSystemClient.GetDirectoryClient(UserId);
+            await DirectoryClient.CreateSubDirectoryAsync(DirectoryName);
         }
     }
 }

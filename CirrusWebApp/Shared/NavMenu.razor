@@ -1,46 +1,37 @@
-﻿<div class="top-row pl-4 navbar navbar-expand navbar-dark">
-    <a class="navbar-brand" href="">CirrusWebApp</a>
+﻿<!--<div class="top-row pl-4 navbar navbar-expand navbar-dark">
     <button class="navbar-toggler" @onclick="ToggleNavMenu">
         <span class="navbar-toggler-icon"></span>
     </button>
-</div>
-
+</div>-->
 <div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
-    <div class="menu-table">
-        <ul class="navbar-nav flex-column">
-            <AuthorizeView>
-                <Authorized>
-                    <li class="nav-item px-3">
-                        <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                            <span class="oi oi-home" aria-hidden="true"></span> Home
-                        </NavLink>
-                    </li>
-                    <li class="nav-item px-3">
-                        <NavLink class="nav-link" href="/MyPage">
-                            <span class="oi oi-file" aria-hidden="true"></span> My Page
-                        </NavLink>
-                    </li>
-                    <li class="nav-item px-3">
-                        <NavLink class="nav-link" href="/Settings">
-                            <span class="oi oi-wrench" aria-hidden="true"></span> Settings
-                        </NavLink>
-                    </li>
-                </Authorized>
-                <NotAuthorized>
-                    <li class="nav-item px-3">
-                        <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                            <span class="oi oi-home" aria-hidden="true"></span> Home
-                        </NavLink>
-                    </li>
-                    <li class="nav-item px-3">
-                        <NavLink class="nav-link" href="/Login">
-                            <span class="oi oi-account-login" aria-hidden="true"></span> Sign In
-                        </NavLink>
-                    </li>
-                </NotAuthorized>
-            </AuthorizeView>
-        </ul>
-    </div>
+    <ul class="navbar-nav flex-row mr-auto">
+        <li class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="oi oi-home" aria-hidden="true"></span> Home
+            </NavLink>
+        </li>
+        <AuthorizeView>
+            <Authorized>
+                <li class="nav-item px-3">
+                    <NavLink class="nav-link" href="/MyPage">
+                        <span class="oi oi-file" aria-hidden="true"></span> My Page
+                    </NavLink>
+                </li>
+                <li class="nav-item px-3">
+                    <NavLink class="nav-link" href="/Settings">
+                        <span class="oi oi-wrench" aria-hidden="true"></span> Settings
+                    </NavLink>
+                </li>
+            </Authorized>
+            <NotAuthorized>
+                <li class="nav-item px-3">
+                    <NavLink class="nav-link" href="/Login">
+                        <span class="oi oi-account-login" aria-hidden="true"></span> Sign In
+                    </NavLink>
+                </li>
+            </NotAuthorized>
+        </AuthorizeView>
+    </ul>
 </div>
 
 @code {

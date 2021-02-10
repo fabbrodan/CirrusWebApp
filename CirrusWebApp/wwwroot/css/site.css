@@ -36,11 +36,10 @@ a, .btn-link {
 }
 
 .main {
-    /*background-image: url("../resources/cirrus-uncinus-cloud-illustration.png");
+    background-image: url("../resources/photo-download.jpg");
     background-repeat: no-repeat;
-    background-position-x: right;
-    background-position-y: bottom;*/
-    background-image: linear-gradient(to bottom, grey, darkgrey);
+    background-size: cover;
+    background-color: rgba(0, 0, 0, 0.5);
 }
 .category-card {
     opacity: 1;
