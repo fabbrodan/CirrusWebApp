@@ -197,5 +197,23 @@ namespace CirrusWebApp.Data.Services
 
             return responseList;
         }
+
+        public async Task DeleteFullUserData(string UserId)
+        {
+            var files = await GetFiles(UserId);
+            foreach (File file in files)
+            {
+                await CosmosUserFileContainer.DeleteItemAsync<File>(file.id, new PartitionKey(UserId));
+            }
+
+            var categories = await GetCategories(UserId);
+            foreach (Category category in categories)
+            {
+                await CosmosUserCategoryContainer.DeleteItemAsync<Category>(category.id, new PartitionKey(UserId));
+            }
+
+            var user = await GetUser(UserId);
+            await CosmosUserContainer.DeleteItemAsync<Models.User>(user.id, new PartitionKey(UserId));
+        }
     }
 }

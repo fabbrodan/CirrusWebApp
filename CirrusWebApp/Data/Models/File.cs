@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 
 namespace CirrusWebApp.Data.Models
 {
-    [Serializable]
     public class File : IComparable, IEquatable<File>
     {
         [JsonProperty(PropertyName = "userid")]

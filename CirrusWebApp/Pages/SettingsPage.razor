@@ -3,6 +3,8 @@
 
 @inject AuthenticationStateProvider AuthState
 @inject CosmosDbService CosmosService
+@inject DataLakeService DataLakeService
+@inject NavigationManager NavManager
 @inject IJSRuntime JS
 
 @page "/Settings"
@@ -15,11 +17,25 @@
     </h4>
     <button class="btn btn-dark" @onclick="DownloadData">Download</button>
 </div>
+<div>
+    <h4>
+        Delete your account and associated data
+    </h4>
+    <button class="btn btn-danger" @onclick="PromptWarning">Delete</button>
+</div>
+@if (promptWarning)
+{
+    <div>
+        <p>By clicking the below button I accept that any uploaded files and personal data associated with this service will be removed permanently and non-retrievable.</p>
+        <button class="btn btn-danger btn-outline-danger" @onclick="DeleteUser">I Understand</button>
+    </div>
+}
 
 
 @code {
 
     private string UserId { get; set; }
+    private bool promptWarning = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -35,5 +51,18 @@
         string jsonData = JsonConvert.SerializeObject(data);
         byte[] jsonBytes = System.Text.Encoding.UTF8.GetBytes(jsonData);
         await JS.InvokeVoidAsync("BlazorFileSaver.downloadFromByteArray", jsonBytes, UserId + ".json", "application/json");
+    }
+
+    private async Task DeleteUser()
+    {
+        promptWarning = false;
+        await CosmosService.DeleteFullUserData(UserId);
+        await DataLakeService.DeleteAllUserFiles(UserId);
+        NavManager.NavigateTo("/LogoutCall", true);
+    }
+
+    async Task PromptWarning()
+    {
+        promptWarning = true;
     }
 }

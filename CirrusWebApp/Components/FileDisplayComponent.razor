@@ -29,7 +29,6 @@ else if (!isLoading && SelectedCategory is null)
                         <div class="card-header bg-transparent">
                             <h4 class="card-title">@Category.CategoryName</h4>
                         </div>
-                        <!--<img class="card-img" src="resources/fileicon6.jpg" alt="file-bg-img" />-->
                     </div>
                 </div>
             }
@@ -39,14 +38,11 @@ else if (!isLoading && SelectedCategory is null)
 else if (SelectedCategory is not null && !isLoading)
 {
     <FileCategoryComponent @ref="@CategoryComponent" UserId="@UserId" @bind-Category="@SelectedCategory.CategoryName" />
-    <!--Files="@CategoryFiles"-->
 }
 
 @code {
 
     private List<Category> Categories = new List<Category>();
-    //private List<File> CategoryFiles = new();
-    //private List<File> UserFiles = new List<File>();
     private string UserId;
     private Category SelectedCategory;
     private Category NewCategory = new Category();
@@ -63,7 +59,6 @@ else if (SelectedCategory is not null && !isLoading)
         var authState = await AuthState.GetAuthenticationStateAsync();
         var User = authState.User;
         UserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value is null ? User.FindFirst(ClaimTypes.Name).Value : User.FindFirst(ClaimTypes.NameIdentifier).Value;
-        //UserFiles = await CosmosService.GetFiles(UserId);
         Categories = await CosmosService.GetCategories(UserId);
         isLoading = false;
         await base.OnInitializedAsync();
@@ -72,13 +67,13 @@ else if (SelectedCategory is not null && !isLoading)
     public void DisplayComponent(Category Category)
     {
         SelectedCategory = Category;
-        //CategoryFiles = UserFiles.Where(c => c.Categories.Contains(Category)).ToList();
         StateHasChanged();
     }
 
     public async Task AddCategory()
     {
         NewCategory.UserId = UserId;
+        NewCategory.id = Guid.NewGuid().ToString();
         await DataLakeService.CreateDirectory(NewCategory.CategoryName, UserId);
         await CosmosService.AddCategory(UserId, NewCategory);
         Categories.Add(NewCategory);

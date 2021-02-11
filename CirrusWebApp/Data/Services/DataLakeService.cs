@@ -103,5 +103,11 @@ namespace CirrusWebApp.Data.Services
             var DirectoryClient = FileSystemClient.GetDirectoryClient(UserId);
             await DirectoryClient.CreateSubDirectoryAsync(DirectoryName);
         }
+
+        public async Task DeleteAllUserFiles(string UserId)
+        {
+            var DirectoryClient = FileSystemClient.GetDirectoryClient(UserId);
+            await DirectoryClient.DeleteAsync();
+        }
     }
 }

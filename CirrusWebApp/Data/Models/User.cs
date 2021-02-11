@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 
 namespace CirrusWebApp.Data.Models
 {
-    [Serializable]
     public class User
     {
         [JsonProperty(PropertyName = "id")]
