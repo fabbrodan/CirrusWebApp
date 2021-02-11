@@ -1,9 +1,39 @@
-﻿@page "/Settings" 
+﻿@using System.Security.Claims;
+@using Newtonsoft.Json;
+
+@inject AuthenticationStateProvider AuthState
+@inject CosmosDbService CosmosService
+@inject IJSRuntime JS
+
+@page "/Settings"
 
 <h3>Settings</h3>
 
+<div>
+    <h4>
+        Download your personal data
+    </h4>
+    <button class="btn btn-dark" @onclick="DownloadData">Download</button>
+</div>
 
 
 @code {
 
+    private string UserId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthState.GetAuthenticationStateAsync();
+        var User = authState.User;
+        UserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value is null ? User.FindFirst(ClaimTypes.Name).Value : User.FindFirst(ClaimTypes.NameIdentifier).Value;
+        await base.OnInitializedAsync();
+    }
+
+    async Task DownloadData()
+    {
+        var data = await CosmosService.GetUserData(UserId);
+        string jsonData = JsonConvert.SerializeObject(data);
+        byte[] jsonBytes = System.Text.Encoding.UTF8.GetBytes(jsonData);
+        await JS.InvokeVoidAsync("BlazorFileSaver.downloadFromByteArray", jsonBytes, UserId + ".json", "application/json");
+    }
 }

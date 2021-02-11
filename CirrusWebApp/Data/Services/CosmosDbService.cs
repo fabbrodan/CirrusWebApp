@@ -15,15 +15,18 @@ namespace CirrusWebApp.Data.Services
         private string CosmosDB = "cirrus-db";
         private string CosmosUserContainerName = "cirrus-user-container";
         private string CosmosUserFileContainerName = "cirrus-user-file-container";
+        private string CosmosUserCategoryContainerName = "cirrus-user-categories";
 
         private CosmosClient CosmosDbClient;
         private Container CosmosUserContainer;
         private Container CosmosUserFileContainer;
+        private Container CosmosUserCategoryContainer;
         public CosmosDbService()
         {
             CosmosDbClient = new CosmosClient(CosmosURI, CosmosKey);
             CosmosUserContainer = CosmosDbClient.GetContainer(CosmosDB, CosmosUserContainerName);
             CosmosUserFileContainer = CosmosDbClient.GetContainer(CosmosDB, CosmosUserFileContainerName);
+            CosmosUserCategoryContainer = CosmosDbClient.GetContainer(CosmosDB, CosmosUserCategoryContainerName);
         }
 
         public async Task AddUser(Models.User User)
@@ -45,6 +48,34 @@ namespace CirrusWebApp.Data.Services
             }
 
             return null;
+        }
+
+        public async Task AddCategory(string UserId, Category Category)
+        {
+            await CosmosUserCategoryContainer.CreateItemAsync(Category, new PartitionKey(UserId));
+        }
+
+        public async Task<List<Category>> GetCategories(string UserId)
+        {
+            var queryText = "SELECT * FROM c WHERE c.userid = '" + UserId + "'";
+            QueryDefinition queryDefinition = new(queryText);
+            FeedIterator<Category> queryResultIterator = CosmosUserCategoryContainer.GetItemQueryIterator<Category>(queryDefinition);
+
+            List<Category> returnList = new();
+
+            while(queryResultIterator.HasMoreResults)
+            {
+                FeedResponse<Category> result = await queryResultIterator.ReadNextAsync();
+                if (result.Count > 0)
+                {
+                    foreach (Category category in result)
+                    {
+                        returnList.Add(category);
+                    }
+                }
+            }
+
+            return returnList;
         }
 
         public async Task<List<File>> GetFiles(string UserId)
@@ -71,7 +102,29 @@ namespace CirrusWebApp.Data.Services
                 
             }
 
-            return fileResult.Count > 0 ? fileResult : null;
+            return fileResult;
+        }
+
+        public async Task<List<File>> GetFiles(string UserId, string Category)
+        {
+            var queryText = "SELECT * FROM c WHERE c.userid = '" + UserId + "' AND c.Categories[0].CategoryName = '" + Category + "'";
+            QueryDefinition queryDefinition = new QueryDefinition(queryText);
+            FeedIterator<File> feedIterator = CosmosUserFileContainer.GetItemQueryIterator<File>(queryDefinition);
+
+            List<File> fileResult = new();
+            while (feedIterator.HasMoreResults)
+            {
+                var result = await feedIterator.ReadNextAsync();
+                if(result.Count > 0)
+                {
+                    foreach (File file in result)
+                    {
+                        fileResult.Add(file);
+                    }
+                }
+            }
+
+            return fileResult;
         }
         public async Task AddFile(File File)
         {
@@ -97,6 +150,52 @@ namespace CirrusWebApp.Data.Services
         public async Task DeleteFile(File File)
         {
             await CosmosUserFileContainer.DeleteItemAsync<File>(File.id, new PartitionKey(File.UserId));
+        }
+
+        public async Task<List<dynamic>> GetUserData(string UserId)
+        {
+            List<dynamic> responseList = new();
+            var FileAndCategoryQueryText = "SELECT * FROM c WHERE c.userid = '" + UserId + "'";
+            var UserQueryText = "SELECT * FROM c WHERE c.id = '" + UserId + "'";
+
+            QueryDefinition FileAndCategoryQuery = new QueryDefinition(FileAndCategoryQueryText);
+            QueryDefinition UserQuery = new QueryDefinition(UserQueryText);
+
+            FeedIterator<Models.User> UserIterator = CosmosUserContainer.GetItemQueryIterator<Models.User>(UserQuery);
+            FeedIterator<Category> CategoryIterator = CosmosUserCategoryContainer.GetItemQueryIterator<Category>(FileAndCategoryQuery);
+            FeedIterator<File> FileIterator = CosmosUserFileContainer.GetItemQueryIterator<File>(FileAndCategoryQuery);
+
+            if (UserIterator.HasMoreResults)
+            {
+                var userResult = await UserIterator.ReadNextAsync();
+                responseList.Add(userResult.FirstOrDefault());
+            }
+
+            if (CategoryIterator.HasMoreResults)
+            {
+                var categoryResult = await CategoryIterator.ReadNextAsync();
+                if(categoryResult.Count() > 0)
+                {
+                    foreach (Category category in categoryResult)
+                    {
+                        responseList.Add(category);
+                    }
+                }
+            }
+
+            if (FileIterator.HasMoreResults)
+            {
+                var fileResult = await FileIterator.ReadNextAsync();
+                if(fileResult.Count() > 0)
+                {
+                    foreach (File file in fileResult)
+                    {
+                        responseList.Add(file);
+                    }
+                }
+            }
+
+            return responseList;
         }
     }
 }

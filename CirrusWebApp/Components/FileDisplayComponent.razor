@@ -1,12 +1,10 @@
-﻿@using Microsoft.AspNetCore.Http;
-@using System.Security.Claims; 
-@using CirrusWebApp.Components;
+﻿@using System.Security.Claims;
 
 @inject CosmosDbService CosmosService
 @inject AuthenticationStateProvider AuthState
 @inject DataLakeService DataLakeService
 
-@if (UserFiles is null)
+@if (isLoading)
 {
     <div class="d-flex justify-content-center">
         <div class="spinner-grow" style="width: 200px; height: 200px;">
@@ -14,46 +12,50 @@
         </div>
     </div>
 }
-
-@if (SelectedCategory is null)
+else if (!isLoading && SelectedCategory is null)
 {
     <div class="row">
         <label>Add Category</label>
-        <input @bind="NewCategory" type="text" />
+        <input @bind="NewCategory.CategoryName" type="text" />
         <button class="btn btn-dark" @onclick="AddCategory">Submit</button>
     </div>
     <div class="row card-group">
-        @foreach (string Category in Categories)
+        @if (Categories.Count() > 0)
         {
-            <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12 category-card">
-                <div @onclick="(() => DisplayComponent(Category))" class="card">
-                    <div class="card-header bg-transparent">
-                        <h4 class="card-title">@Category</h4>
+            @foreach (Category Category in Categories)
+            {
+                <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12 category-card">
+                    <div @onclick="(() => DisplayComponent(Category))" class="card">
+                        <div class="card-header bg-transparent">
+                            <h4 class="card-title">@Category.CategoryName</h4>
+                        </div>
+                        <!--<img class="card-img" src="resources/fileicon6.jpg" alt="file-bg-img" />-->
                     </div>
-                    <!--<img class="card-img" src="resources/fileicon6.jpg" alt="file-bg-img" />-->
                 </div>
-            </div>
+            }
         }
     </div>
 }
-else
+else if (SelectedCategory is not null && !isLoading)
 {
-    <FileCategoryComponent @ref="@CategoryComponent" Files="@CategoryFiles" UserId="@UserId" @bind-Category="@SelectedCategory" />
+    <FileCategoryComponent @ref="@CategoryComponent" UserId="@UserId" @bind-Category="@SelectedCategory.CategoryName" />
+    <!--Files="@CategoryFiles"-->
 }
 
 @code {
 
-    private List<string> Categories = new List<string>();
-    private List<File> CategoryFiles;
-    private List<File> UserFiles;
+    private List<Category> Categories = new List<Category>();
+    //private List<File> CategoryFiles = new();
+    //private List<File> UserFiles = new List<File>();
     private string UserId;
-    private string SelectedCategory;
-    private string NewCategory;
+    private Category SelectedCategory;
+    private Category NewCategory = new Category();
     FileCategoryComponent CategoryComponent = new FileCategoryComponent();
+    private bool isLoading = true;
 
     protected override void OnAfterRender(bool firstRender)
     {
-        CategoryComponent.CategoryChanged += NullifySelectedCategory;;
+        CategoryComponent.CategoryChanged += NullifySelectedCategory;
     }
 
     protected override async Task OnInitializedAsync()
@@ -61,39 +63,31 @@ else
         var authState = await AuthState.GetAuthenticationStateAsync();
         var User = authState.User;
         UserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value is null ? User.FindFirst(ClaimTypes.Name).Value : User.FindFirst(ClaimTypes.NameIdentifier).Value;
-        UserFiles = await CosmosService.GetFiles(UserId);
-        if (UserFiles is not null)
-        {
-            foreach (File file in UserFiles)
-            {
-                foreach (string category in file.Categories)
-                {
-                    if (!Categories.Contains(category))
-                    {
-                        Categories.Add(category);
-                    }
-                }
-            }
-        }
+        //UserFiles = await CosmosService.GetFiles(UserId);
+        Categories = await CosmosService.GetCategories(UserId);
+        isLoading = false;
         await base.OnInitializedAsync();
     }
 
-    public void DisplayComponent(string Category)
+    public void DisplayComponent(Category Category)
     {
         SelectedCategory = Category;
-        CategoryFiles = UserFiles.Where(c => c.Categories.Contains(Category)).ToList();
+        //CategoryFiles = UserFiles.Where(c => c.Categories.Contains(Category)).ToList();
+        StateHasChanged();
     }
 
     public async Task AddCategory()
     {
-        await DataLakeService.CreateDirectory(NewCategory, UserId);
+        NewCategory.UserId = UserId;
+        await DataLakeService.CreateDirectory(NewCategory.CategoryName, UserId);
+        await CosmosService.AddCategory(UserId, NewCategory);
         Categories.Add(NewCategory);
-        NewCategory = null;
     }
 
-    public void NullifySelectedCategory(string category)
+    public async void NullifySelectedCategory(string category)
     {
         SelectedCategory = null;
+        Categories = await CosmosService.GetCategories(UserId);
         StateHasChanged();
     }
 }

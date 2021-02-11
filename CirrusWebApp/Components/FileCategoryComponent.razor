@@ -20,33 +20,44 @@
             <h3>@Category</h3>
         </div>
     </div>
-    <div class="row">
-        <table class="table">
-            <thead>
-                <tr class="d-flex">
-                    <th class="col-1">
-                        <input type="checkbox" @onclick="OnSelectAll"/>
-                    </th>
-                    <th class="col-4">File Name:</th>
-                    <th class="col-3">File Type:</th>
-                    <th class="col-4">Last Modified:</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (File file in Files)
-                {
+    @if (Files is not null)
+    {
+        <div class="row">
+            <table class="table">
+                <thead>
                     <tr class="d-flex">
-                        <td class="col-1">
-                            <input type="checkbox" @onchange="ChangeEventArgs => { OnChecked(file, ChangeEventArgs); }" class="fileChkbox"/>
-                        </td>
-                        <td class="col-4">@file.FileTitle</td>
-                        <td class="col-3">@file.FileExtension</td>
-                        <td class="col-4">@file.LastModified</td>
+                        <th class="col-1">
+                            <input type="checkbox" @onclick="OnSelectAll"/>
+                        </th>
+                        <th class="col-4">File Name:</th>
+                        <th class="col-3">File Type:</th>
+                        <th class="col-4">Last Modified:</th>
                     </tr>
-                }
-            </tbody>
-        </table>
-    </div>
+                </thead>
+                <tbody>
+                    @foreach (File file in Files)
+                    {
+                        <tr class="d-flex">
+                            <td class="col-1">
+                                <input type="checkbox" @onchange="ChangeEventArgs => { OnChecked(file, ChangeEventArgs); }" class="fileChkbox"/>
+                            </td>
+                            <td class="col-4">@file.FileTitle</td>
+                            <td class="col-3">@file.FileExtension</td>
+                            <td class="col-4">@file.LastModified</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="d-flex justify-content-center">
+            <div class="spinner-grow" style="width: 200px; height: 200px;">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+    }
     <div class="row">
         <div class="col-1">
             <button @onclick="OnDelete" type="button" class="btn btn-danger">
@@ -80,9 +91,6 @@
                                     <div class="col-6">
                                         <p class="p-3">@file.FileTitle</p>
                                     </div>
-                                    <div class="col-6">
-                                        <input @onchange="(ChangeEventArgs _event) => SetCategories(_event, file.FileName)" />
-                                    </div>
                                 </div>
                             }
                         }
@@ -115,10 +123,11 @@
     List<File> SelectedFiles = new List<File>();
     DateTime CurrentTimeStampLocalized;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
+        Files = await CosmosService.GetFiles(UserId, Category);
         Context = new EditContext(UploadFiles);
-        base.OnInitialized();
+        await base.OnInitializedAsync();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -142,15 +151,10 @@
                 id = Guid.NewGuid().ToString(),
                 FileName = file.Name,
                 FileTitle = FileTitle,
-                FileExtension = file.Name.Substring(file.Name.LastIndexOf(".") + 1)
-            });
-        }
-    }
-
-    private void SetCategories(ChangeEventArgs e, string fileName)
-    {
-        List<string> Categories = e.Value.ToString().Replace(" ", "").Split(";").ToList<string>();
-        CirrusFiles.Where<File>(f => f.FileName == fileName).FirstOrDefault().Categories = Categories;
+                FileExtension = file.Name.Substring(file.Name.LastIndexOf(".") + 1),
+                Categories = new List<Category>() { new Category(Category, UserId) }
+            }) ;
+        }   
     }
 
     private async Task Upload()

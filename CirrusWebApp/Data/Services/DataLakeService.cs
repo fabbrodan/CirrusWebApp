@@ -35,9 +35,9 @@ namespace CirrusWebApp.Data.Services
         {
             var DirectoryClient = FileSystemClient.GetDirectoryClient(CirrusFile.UserId);
             DataLakeFileClient FileClient = null;
-            foreach (string Category in CirrusFile.Categories)
+            foreach (Category Category in CirrusFile.Categories)
             {
-                FileClient = DirectoryClient.CreateSubDirectoryAsync(Category).Result.Value.CreateFileAsync(CirrusFile.FileName).Result.Value;
+                FileClient = DirectoryClient.CreateSubDirectoryAsync(Category.CategoryName).Result.Value.CreateFileAsync(CirrusFile.FileName).Result.Value;
                 using (var MS = new MemoryStream())
                 {
                     await WebFile.OpenReadStream(10485760).CopyToAsync(MS);
@@ -53,9 +53,9 @@ namespace CirrusWebApp.Data.Services
         {
             var DirectoryClient = FileSystemClient.GetDirectoryClient(File.UserId);
             DataLakeFileClient FileClient = null;
-            foreach (string Category in File.Categories)
+            foreach (Category Category in File.Categories)
             {
-                FileClient = DirectoryClient.GetFileClient(Category + "/" + File.FileName);
+                FileClient = DirectoryClient.GetFileClient(Category.CategoryName + "/" + File.FileName);
                 await FileClient.DeleteAsync(false);
             }
 
@@ -73,7 +73,7 @@ namespace CirrusWebApp.Data.Services
                 {
                     foreach (Models.File file in Files)
                     {
-                        FileClient = DirectoryClient.GetFileClient(file.Categories[0] + "/" + file.FileName);
+                        FileClient = DirectoryClient.GetFileClient(file.Categories[0].CategoryName + "/" + file.FileName);
                         using (Stream stream = await FileClient.OpenReadAsync())
                         {
                             var entry = new ZipEntry(file.FileName);
