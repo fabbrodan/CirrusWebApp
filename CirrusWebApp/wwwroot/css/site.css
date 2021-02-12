@@ -3,6 +3,19 @@
 html, body {
     font-family:  'Helvetica Neue', Helvetica, Arial, sans-serif;
     height: 100%;
+    overflow: hidden;
+}
+
+.modal-backdrop {
+    z-index: -999 !important;
+}
+
+.btn {
+    text-transform: uppercase;
+    border: none;
+    padding: 15px 20px;
+    border-radius: 25px;
+    background: #aeb8b8;
 }
 
 .page {
@@ -13,6 +26,14 @@ a, .btn-link {
     color: #0366d6;
 }
 
+.nav-link {
+    color: darkgrey !important;
+}
+
+.nav-link:hover {
+    color: white !important;
+}
+
 .btn-primary {
     color: #fff;
     background-color: #1b6ec2;
@@ -21,6 +42,8 @@ a, .btn-link {
 
 .content {
     padding-top: 1.1rem;
+    position: relative;
+    z-index: 1;
 }
 
 .valid.modified:not([type=checkbox]) {
@@ -36,10 +59,34 @@ a, .btn-link {
 }
 
 .main {
-    background-image: url("../resources/photo-download.jpg");
+    position: relative;
+}
+
+.main-background {
+    /*background-image: linear-gradient(to top right, rgb(173, 173, 173), rgb(128, 128, 128));*/
+    position: absolute;
+    background-image: url(../resources/df02d8b746196732b9da293a65f13bd8.jpg);
+    background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
-    background-color: rgba(0, 0, 0, 0.5);
+    animation: background 10s ease-out infinite normal;
+    height: 100%;
+    width: 100%;
+}
+
+@keyframes background {
+    0% {
+        transform: scale(1);
+    }
+    25% {
+        transform: scale(1.05);
+    }
+    60% {
+        transform: scale(1);
+    }
+    100% {
+        transform: scale(1);
+    }
 }
 .category-card {
     opacity: 1;

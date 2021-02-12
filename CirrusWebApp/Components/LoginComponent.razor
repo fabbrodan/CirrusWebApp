@@ -4,45 +4,153 @@
 
 @inject PasswordHashService PasswordService
 @inject NavigationManager NavManager
-    <div class="container">
-        <div class="row p-3">
-            <div class="p-1 col-4 offset-4 border border-dark rounded">
-                <EditForm Model="@SignInUser" OnSubmit="Submit">
-                    <ValidationSummary />
-                    <div>
-                        <InputText @bind-Value="SignInUser.Email" placeholder="Email" />
+@inject PasswordHashService PasswordHashService
+@inject CosmosDbService CosmosDbService
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-6 mx-auto p-0">
+            <div class="card @((PswMisMatch) ? "shake-animation" : "")">
+                <div class="login-box">
+                    <div class="login-snip">
+                        <div class="row pb-5">
+                            <div class="float-right">
+                                <button type="button" class="button" data-toggle="modal" data-target="#TOSModal">
+                                    Terms of Use
+                                </button>
+                            </div>
+                        </div>
+                        <input id="tab-1" type="radio" name="tab" class="sign-in" checked>
+                        <label for="tab-1" class="tab">Login</label>
+                        <input id="tab-2" type="radio" name="tab" class="sign-up">
+                        <label for="tab-2" class="tab">Sign Up</label>
+                        <div class="login-space">
+                            <div class="login">
+                                <EditForm Model="SignInUser" OnSubmit="Submit">
+                                    <div class="group form-group">
+                                        <label for="user" class="label">Email</label>
+                                        <InputText @bind-Value="SignInUser.Email" id="user" type="text" class="input form-control" placeholder="Enter your email" />
+                                    </div>
+                                    <div class="group form-group">
+                                        <label for="pass" class="label">Password</label>
+                                        <InputText @bind-Value="SignInUser.Password" id="pass" type="password" class="input form-control" data-type="password" placeholder="Enter your password" />
+                                    </div>
+                                    <div class="group form-group">
+                                        <InputCheckbox @bind-Value="PersistentCookie" id="check" type="checkbox" class="check" />
+                                        <label for="check">
+                                            Keep me Signed in
+                                        </label>
+                                    </div>
+                                    <div class="group">
+                                        <input type="submit" class="button" value="Sign In">
+                                    </div>
+                                </EditForm>
+                                <div class="group">
+                                    <NavLink class="nav-link" href="/LoginCallGoogle">
+                                        <span class="oi oi-account-login" aria-hidden="true"></span> Sign In with Google
+                                    </NavLink>
+                                </div>
+                                <div class="hr"></div>
+                            </div>
+                            <div class="sign-up-form">
+                                <EditForm Model="SignUpUser" OnSubmit="SubmitSignUp">
+                                    <div class="group form-group">
+                                        <label for="pass" class="label">Email Address</label>
+                                        <InputText @bind-Value="SignUpUser.Email" id="pass" type="text" class="input form-control" placeholder="Email address" />
+                                    </div>
+                                    <div class="group form-group">
+                                        <label for="pass" class="label">First Name</label>
+                                        <InputText @bind-Value="SignUpUser.Firstname" id="pass" type="text" class="input form-control" placeholder="First Name" />
+                                    </div>
+                                    <div class="group form-group">
+                                        <label for="pass" class="label">Last Name</label>
+                                        <InputText @bind-Value="SignUpUser.Lastname" id="pass" type="text" class="input form-control" placeholder="Last Name" />
+                                    </div>
+                                    <div class="group form-group">
+                                        <label for="pass" class="label">Password</label>
+                                        <InputText @bind-Value="SignUpUser.Password" id="pass" type="password" class="input form-control" data-type="password" placeholder="Create your password" />
+                                    </div>
+                                    <div class="group form-group">
+                                        <label for="pass" class="label">Repeat Password</label>
+                                        <InputText @bind-Value="RepeatedPsw" id="pass" type="password" class="input form-control" data-type="password" placeholder="Repeat your password" />
+                                    </div>
+                                    <div class="group">
+                                        <input type="submit" class="button" value="Sign Up">
+                                    </div>
+                                </EditForm>
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <InputText @bind-Value="SignInUser.Password" placeholder="Password" type="password" />
-                    </div>
-                    <div>
-                        <InputCheckbox @bind-Value="PersistentCookie" />
-                        <label>Remember Me</label>
-                    </div>
-                    <button class="btn btn-dark" type="submit">Sign In</button>
-                </EditForm>
-            </div>
-        </div>
-        <div class="row p-3">
-            <div class="col-3 offset-3">
-                <NavLink class="nav-link" href="/LoginCallGoogle">
-                    <span class="oi oi-account-login" aria-hidden="true"></span> Sign In with Google
-                </NavLink>
-            </div>
-            <div class="col-3">
-                <NavLink class="nav-link" href="/SignUp">
-                    <span class="oi oi-document" aria-hidden="true"></span> Sign up!
-                </NavLink>
+                </div>
             </div>
         </div>
     </div>
-    @code {
+    <div class="row">
+        <div class="col-md-6 mx-auto p-0 justify-content-center">
+            <div class="modal fade" id="TOSModal" tabindex="-1" role="dialog" aria-labelledby="ModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Terms of Use</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <p>
+                                By joining this site you are hereby permitting us to store your email address, first name and lastname in our system.
+                            </p>
+                            <p>
+                                This is critical for us to notify you of any changes to our site or potential data breaches that may affect you.
+                            </p>
+                            <p>
+                                Your personal data will not be shared by any third parties or sold onto marketing agencies.
+                            </p>
+                            <p>
+                                However we can not guarantee that other sites may intercept your browsing cookie history and exploit them that way.
+                            </p>
+                            <p>
+                                We are not liable for any loss of data nor corrupted data that is uploaded to us.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@code {
 
-        User SignInUser = new User();
-        bool PersistentCookie;
+    User SignInUser = new User();
+    bool PersistentCookie;
 
-        public void Submit()
+    private User SignUpUser = new User();
+    private string ClearPsw;
+    private string RepeatedPsw;
+    private bool PswMisMatch;
+
+    public async Task SubmitSignUp()
+    {
+        PswMisMatch = false;
+        if (SignUpUser.Password == RepeatedPsw)
         {
-            NavManager.NavigateTo($"/LoginCallNative/{SignInUser.Email}/{SignInUser.Password}/{PersistentCookie}", true);
+            SignUpUser.id = SignUpUser.Email;
+            SignUpUser.PasswordSalt = PasswordHashService.RandomSalt;
+            ClearPsw = SignUpUser.Password;
+            SignUpUser.Password = PasswordHashService.GenerateSaltedHash(SignUpUser.Password);
+
+            await CosmosDbService.AddUser(SignUpUser);
+
+            NavManager.NavigateTo($"/LoginCallNative/{SignUpUser.Email}/{ClearPsw}/false", true);
+        }
+        else
+        {
+            PswMisMatch = true;
         }
     }
+
+    public void Submit()
+    {
+        NavManager.NavigateTo($"/LoginCallNative/{SignInUser.Email}/{SignInUser.Password}/{PersistentCookie}", true);
+    }
+}

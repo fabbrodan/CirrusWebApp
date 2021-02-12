@@ -4,6 +4,7 @@
 @inject AuthenticationStateProvider AuthState
 @inject DataLakeService DataLakeService
 
+
 @if (isLoading)
 {
     <div class="d-flex justify-content-center">
@@ -14,11 +15,16 @@
 }
 else if (!isLoading && SelectedCategory is null)
 {
-    <div class="row">
-        <label>Add Category</label>
-        <input @bind="NewCategory.CategoryName" type="text" />
-        <button class="btn btn-dark" @onclick="AddCategory">Submit</button>
+    <div class="d-flex justify-content-center">
+        <h2>Categories</h2>
     </div>
+        <div class="row">
+            <div class="col-6">
+                <h4>Add Category</h4>
+                <input class="form-control" @bind="NewCategory.CategoryName" type="text" />
+                <button class="btn btn-dark pr-3" @onclick="AddCategory">Submit</button>
+            </div>
+        </div>
     <div class="row card-group">
         @if (Categories.Count() > 0)
         {
@@ -37,12 +43,12 @@ else if (!isLoading && SelectedCategory is null)
 }
 else if (SelectedCategory is not null && !isLoading)
 {
-    <FileCategoryComponent @ref="@CategoryComponent" UserId="@UserId" @bind-Category="@SelectedCategory.CategoryName" />
+<FileCategoryComponent @ref="@CategoryComponent" UserId="@UserId" @bind-Category="@SelectedCategory.CategoryName" />
 }
 
-@code {
+    @code {
 
-    private List<Category> Categories = new List<Category>();
+        private List<Category> Categories = new List<Category>();
     private string UserId;
     private Category SelectedCategory;
     private Category NewCategory = new Category();
@@ -85,4 +91,4 @@ else if (SelectedCategory is not null && !isLoading)
         Categories = await CosmosService.GetCategories(UserId);
         StateHasChanged();
     }
-}
+    }

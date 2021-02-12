@@ -1,10 +1,9 @@
-﻿<!--<div class="top-row pl-4 navbar navbar-expand navbar-dark">
-    <button class="navbar-toggler" @onclick="ToggleNavMenu">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-</div>-->
-<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
-    <ul class="navbar-nav flex-row mr-auto">
+﻿@using System.Security.Claims
+
+@inject AuthenticationStateProvider AuthState
+
+
+    <ul class="navbar-nav flex-row mr-5">
         <li class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
                 <span class="oi oi-home" aria-hidden="true"></span> Home
@@ -32,15 +31,50 @@
             </NotAuthorized>
         </AuthorizeView>
     </ul>
-</div>
+    @if (User != null)
+    {
+        <ul class="navbar-nav flex-row ml-auto">
+            <li class="nav-item">
+                <p class="text-white float-right">@Firstname @Lastname</p>
+            </li>
+                @if (Avatar != null)
+                {
+        <li class="nav-item">
+            <img style="width: 15px; height: 15px;" src="@Avatar" />
+        </li>
+                }
+            <AuthorizeView>
+                <Authorized>
+                    <li class="nav-item">
+                        <a class="text-white" href="/LogoutCall">Sign Out</a>
+                    </li>
+                </Authorized>
+            </AuthorizeView>
+        </ul>
+    }
 
 @code {
-    private bool collapseNavMenu = true;
 
-    private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+    private ClaimsPrincipal User;
+    private string Firstname;
+    private string Lastname;
+    private string Avatar;
 
-    private void ToggleNavMenu()
+    protected override async Task OnInitializedAsync()
     {
-        collapseNavMenu = !collapseNavMenu;
+        await SetupUser();
+        await base.OnInitializedAsync();
+    }
+
+    private async Task SetupUser()
+    {
+        var authState = await AuthState.GetAuthenticationStateAsync();
+        User = authState.User;
+        if (User != null)
+        {
+            Firstname = User.FindFirst(ClaimTypes.GivenName) == null ? "" : User.FindFirst(ClaimTypes.GivenName).Value;
+            Lastname = User.FindFirst(ClaimTypes.Surname) == null ? "" : User.FindFirst(ClaimTypes.Surname).Value;
+            Avatar = User.FindFirst("urn:google:image") == null ? null : User.FindFirst("urn:google:image").Value;
+        }
     }
 }

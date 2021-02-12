@@ -58,50 +58,52 @@
             </div>
         </div>
     }
-    <div class="row">
-        <div class="col-1">
-            <button @onclick="OnDelete" type="button" class="btn btn-danger">
-                <span class="oi oi-trash" aria-hidden="true"></span>
-            </button>
-        </div>
-        <div class="col-1">
-            <button @onclick="OnDownload" type="button" class="btn btn-secondary">
-                <span class="oi oi-cloud-download" aria-hidden="true"></span>
-            </button>
-        </div>
-        <div class="col-1">
-            <button @onclick="(() => { ShowUpload = !ShowUpload; })" type="button" class="btn btn-dark">
-                <span class="oi oi-cloud-upload" aria-hidden="true"></span>
-            </button>
-        </div>
-        @if (ShowUpload)
-        {
-            <div class="col-3 fade-in">
-                <EditForm EditContext="Context" OnValidSubmit="Upload">
-                    <div class="form-group">
-                        <InputFile id="fileSelect" OnChange="FileAdd" Multiple style="display: none" />
-                        <button class="btn btn-dark btn-outline-light" type="button" onclick="document.getElementById('fileSelect').click();">Browse...</button>
-                    </div>
-                    <div class="form-group">
-                        @if (CirrusFiles != null)
-                        {
-                            foreach (File file in CirrusFiles)
-                            {
-                                <div class="row">
-                                    <div class="col-6">
-                                        <p class="p-3">@file.FileTitle</p>
-                                    </div>
-                                </div>
-                            }
-                        }
-                    </div>
-                    <div class="form-group">
-                        <button class="btn btn-success" type="submit">Upload</button>
-                    </div>
-                </EditForm>
-            </div>
-        }
+<div class="row">
+    <div class="col-1">
+        <button @onclick="OnDelete" type="button" class="btn btn-danger" data-toggle="tooltip" data-placement="top" title="Delete the selected files">
+            <span class="oi oi-trash" aria-hidden="true"></span>
+        </button>
     </div>
+    <div class="col-1">
+        <button @onclick="OnDownload" type="button" class="btn btn-secondary" data-toggle="tooltip" data-placement="top" title="Download the selected files">
+            <span class="oi oi-cloud-download" aria-hidden="true"></span>
+        </button>
+    </div>
+    <div class="col-1">
+        <button onclick="document.getElementById('fileSelect').click();" type="button" class="btn btn-dark" data-toggle="tooltip" data-placement="top" title="Upload one or more files to this category">
+            <InputFile id="fileSelect" OnChange="FileAdd" Multiple style="display: none" />
+            <span class="oi oi-cloud-upload" aria-hidden="true"></span>
+        </button>
+    </div>
+    <!--
+    @if (ShowUpload)
+    {
+        <div class="col-3 fade-in">
+            <EditForm EditContext="Context" OnValidSubmit="Upload">
+                <div class="form-group">
+                    <InputFile id="fileSelect" OnChange="FileAdd" Multiple style="display: none" />
+                    <button class="btn btn-dark btn-outline-light" type="button" onclick="document.getElementById('fileSelect').click();">Browse...</button>
+                </div>
+                <div class="form-group">
+                    @if (CirrusFiles != null)
+                    {
+                        foreach (File file in CirrusFiles)
+                        {
+                            <div class="row">
+                                <div class="col-6">
+                                    <p class="p-3">@file.FileTitle</p>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+                <div class="form-group">
+                    <button class="btn btn-success" type="submit">Upload</button>
+                </div>
+            </EditForm>
+        </div>
+    }-->
+</div>
 </div>
 
 @code {
@@ -136,7 +138,7 @@
         CurrentTimeStampLocalized = browserDateTime.Now;
     }
 
-    private void FileAdd(InputFileChangeEventArgs e)
+    private async Task FileAdd(InputFileChangeEventArgs e)
     {
         UploadFiles = e.GetMultipleFiles();
         CirrusFiles = new List<File>();
@@ -154,7 +156,8 @@
                 FileExtension = file.Name.Substring(file.Name.LastIndexOf(".") + 1),
                 Categories = new List<Category>() { new Category(Category, UserId) }
             }) ;
-        }   
+        }
+        await Upload();
     }
 
     private async Task Upload()

@@ -5,18 +5,23 @@
 
 @inject AuthenticationStateProvider AuthState
 
-<div class="top-row">
+
     <AuthorizeView>
         <Authorized>
-            <h5>Welcome @User.FindFirst(ClaimTypes.GivenName).Value @User.FindFirst(ClaimTypes.Surname).Value!</h5>
+            <div class="d-flex justify-content-center">
+                <h2>Welcome @User.FindFirst(ClaimTypes.GivenName).Value @User.FindFirst(ClaimTypes.Surname).Value!</h2>
+            </div>
         </Authorized>
         <NotAuthorized>
-            <h5>Welcome To Cirrus Cloud Storage!</h5>
-            <p>Our goal is to give you the most seamless cloud storage solution possible.</p>
-            <p>By integrating Machine Learning we can assist you with automatically categorize your files.</p>
+            <div class="row">
+                <div class="col-12 text-center">
+                    <h2 style="font-weight: bolder">Welcome To Cirrus Cloud Storage!</h2>
+                    <h4>Our goal is to give you the most seamless cloud storage solution possible.</h4>
+                    <h4>By integrating Machine Learning we can assist you with automatically categorize your files.</h4>
+                </div>
+            </div>
         </NotAuthorized>
     </AuthorizeView>
-</div>
 
     @code {
 
