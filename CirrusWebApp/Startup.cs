@@ -48,7 +48,7 @@ namespace CirrusWebApp
             services.AddSignalR().AddAzureSignalR(options =>
             {
                 options.ServerStickyMode = Microsoft.Azure.SignalR.ServerStickyMode.Required;
-                options.ConnectionString = "Endpoint=https://cirrus-signalr.service.signalr.net;AccessKey=kaPDOVuQ5frUZ+WUdb6pTVN7VbHNUu3YWkiDIzpkDXg=;Version=1.0;";
+                options.ConnectionString = System.Environment.GetEnvironmentVariable("SignalR_ConnectionString");
             });
 
             services.AddAuthentication().AddGoogle(o =>
