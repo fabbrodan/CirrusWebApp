@@ -39,6 +39,7 @@ namespace CirrusWebApp
             services.AddSingleton<CosmosDbService>();
             services.AddSingleton<PasswordHashService>();
             services.AddSingleton<DataLakeService>();
+            services.AddSingleton<ImageClassifierService>();
 
             services.AddBlazoredLocalisation();
             

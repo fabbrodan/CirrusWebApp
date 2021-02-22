@@ -8,6 +8,7 @@
 @inject CosmosDbService CosmosService
 @inject DataLakeService DataLakeService
 @inject Blazored.Localisation.Services.IBrowserDateTimeProvider BrowserDateTimeProvider
+@inject ImageClassifierService ImageClassifier 
 
 <div>
     <div class="row">
@@ -29,9 +30,10 @@
                         <th class="col-1">
                             <input type="checkbox" @onclick="OnSelectAll"/>
                         </th>
-                        <th class="col-4">File Name:</th>
+                        <th class="col-3">File Name:</th>
                         <th class="col-3">File Type:</th>
-                        <th class="col-4">Last Modified:</th>
+                        <th class="col-2">Tags:</th>
+                        <th class="col-3">Last Modified:</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -41,9 +43,15 @@
                             <td class="col-1">
                                 <input type="checkbox" @onchange="ChangeEventArgs => { OnChecked(file, ChangeEventArgs); }" class="fileChkbox"/>
                             </td>
-                            <td class="col-4">@file.FileTitle</td>
+                            <td class="col-3">@file.FileTitle</td>
                             <td class="col-3">@file.FileExtension</td>
-                            <td class="col-4">@file.LastModified</td>
+                            <td class="col-2">
+                                @foreach (string tag in file.Tags)
+                                {
+                                    <a class="d-flex" href="#">@tag </a>
+                                }
+                            </td>
+                            <td class="col-3">@file.LastModified</td>
                         </tr>
                     }
                 </tbody>
@@ -92,6 +100,7 @@
     private IReadOnlyList<IBrowserFile> UploadFiles = new List<IBrowserFile>();
     private List<File> CirrusFiles;
     private EditContext Context;
+    private List<string> ImageExtensions = new List<string>() { "jpg", "jpeg", "png" };
 
     List<File> SelectedFiles = new List<File>();
     DateTime CurrentTimeStampLocalized;
@@ -115,16 +124,23 @@
         CirrusFiles = new List<File>();
         foreach (IBrowserFile file in UploadFiles)
         {
+            List<string> Tags = new();
             Regex regex = new Regex(@"[^A-ZÅÄÖa-zåäö0-9_\-\p{L}]");
             string FileTitle = file.Name.Substring(0, 0 + file.Name.LastIndexOf("."));
             FileTitle = regex.Replace(FileTitle, " ");
+            var FileExtension = file.Name.Substring(file.Name.LastIndexOf(".") + 1);
+            if (ImageExtensions.Contains(FileExtension))
+            {
+                Tags = await ImageClassifier.InvokeRequestResponseService(file);
+            }
             CirrusFiles.Add(new File
             {
                 UserId = UserId,
                 id = Guid.NewGuid().ToString(),
                 FileName = file.Name,
                 FileTitle = FileTitle,
-                FileExtension = file.Name.Substring(file.Name.LastIndexOf(".") + 1),
+                FileExtension = FileExtension,
+                Tags = Tags,
                 Categories = new List<Category>() { new Category(Category, UserId) }
             }) ;
         }

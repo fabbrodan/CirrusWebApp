@@ -138,6 +138,7 @@
             SignUpUser.PasswordSalt = PasswordHashService.RandomSalt;
             ClearPsw = SignUpUser.Password;
             SignUpUser.Password = PasswordHashService.GenerateSaltedHash(SignUpUser.Password);
+            SignUpUser.RegisteredDateTime = DateTime.Now;
 
             await CosmosDbService.AddUser(SignUpUser);
 
