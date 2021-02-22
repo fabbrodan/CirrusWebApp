@@ -30,9 +30,10 @@
                         <th class="col-1">
                             <input type="checkbox" @onclick="OnSelectAll"/>
                         </th>
-                        <th class="col-4">File Name:</th>
+                        <th class="col-3">File Name:</th>
                         <th class="col-3">File Type:</th>
-                        <th class="col-4">Last Modified:</th>
+                        <th class="col-2">Tags:</th>
+                        <th class="col-3">Last Modified:</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -42,9 +43,15 @@
                             <td class="col-1">
                                 <input type="checkbox" @onchange="ChangeEventArgs => { OnChecked(file, ChangeEventArgs); }" class="fileChkbox"/>
                             </td>
-                            <td class="col-4">@file.FileTitle</td>
+                            <td class="col-3">@file.FileTitle</td>
                             <td class="col-3">@file.FileExtension</td>
-                            <td class="col-4">@file.LastModified</td>
+                            <td class="col-2">
+                                @foreach (string tag in file.Tags)
+                                {
+                                    <a class="d-flex" href="#">@tag </a>
+                                }
+                            </td>
+                            <td class="col-3">@file.LastModified</td>
                         </tr>
                     }
                 </tbody>
