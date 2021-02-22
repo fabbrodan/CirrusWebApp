@@ -8,6 +8,7 @@
 @inject CosmosDbService CosmosService
 @inject DataLakeService DataLakeService
 @inject Blazored.Localisation.Services.IBrowserDateTimeProvider BrowserDateTimeProvider
+@inject ImageClassifierService ImageClassifier 
 
 <div>
     <div class="row">
@@ -92,6 +93,7 @@
     private IReadOnlyList<IBrowserFile> UploadFiles = new List<IBrowserFile>();
     private List<File> CirrusFiles;
     private EditContext Context;
+    private List<string> ImageExtensions = new List<string>() { "jpg", "jpeg", "png" };
 
     List<File> SelectedFiles = new List<File>();
     DateTime CurrentTimeStampLocalized;
@@ -115,16 +117,23 @@
         CirrusFiles = new List<File>();
         foreach (IBrowserFile file in UploadFiles)
         {
+            List<string> Tags = new();
             Regex regex = new Regex(@"[^A-ZÅÄÖa-zåäö0-9_\-\p{L}]");
             string FileTitle = file.Name.Substring(0, 0 + file.Name.LastIndexOf("."));
             FileTitle = regex.Replace(FileTitle, " ");
+            var FileExtension = file.Name.Substring(file.Name.LastIndexOf(".") + 1);
+            if (ImageExtensions.Contains(FileExtension))
+            {
+                Tags = await ImageClassifier.InvokeRequestResponseService(file);
+            }
             CirrusFiles.Add(new File
             {
                 UserId = UserId,
                 id = Guid.NewGuid().ToString(),
                 FileName = file.Name,
                 FileTitle = FileTitle,
-                FileExtension = file.Name.Substring(file.Name.LastIndexOf(".") + 1),
+                FileExtension = FileExtension,
+                Tags = Tags,
                 Categories = new List<Category>() { new Category(Category, UserId) }
             }) ;
         }

@@ -39,6 +39,7 @@ namespace CirrusWebApp
             services.AddSingleton<CosmosDbService>();
             services.AddSingleton<PasswordHashService>();
             services.AddSingleton<DataLakeService>();
+            services.AddSingleton<ImageClassifierService>();
 
             services.AddBlazoredLocalisation();
             
@@ -48,7 +49,7 @@ namespace CirrusWebApp
             services.AddSignalR().AddAzureSignalR(options =>
             {
                 options.ServerStickyMode = Microsoft.Azure.SignalR.ServerStickyMode.Required;
-                options.ConnectionString = System.Environment.GetEnvironmentVariable("SignalR_ConnectionString");
+                options.ConnectionString = "Endpoint=https://cirrus-signalr.service.signalr.net;AccessKey=kaPDOVuQ5frUZ+WUdb6pTVN7VbHNUu3YWkiDIzpkDXg=;Version=1.0;"; //System.Environment.GetEnvironmentVariable("SignalR_ConnectionString");
             });
 
             services.AddAuthentication().AddGoogle(o =>

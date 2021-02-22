@@ -19,6 +19,7 @@ namespace CirrusWebApp.Data.Models
         public string PrimaryFilePath { get; set; }
         public DateTime LastModified { get; set; }
         public List<Category> Categories { get; set; } = new();
+        public List<string> Tags { get; set; } = new();
 
         public int CompareTo(object obj)
         {
