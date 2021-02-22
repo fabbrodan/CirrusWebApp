@@ -58,9 +58,9 @@ namespace CirrusWebApp.Data.Services
                     };
 
 
-                    const string apiKey = "W1DzhcvAGLSqNzc1I2I2jvtQb1qGnbwO"; // Replace this with the API key for the web service
+                    string apiKey = Environment.GetEnvironmentVariable("MLApiKey"); // Replace this with the API key for the web service
                     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
-                    client.BaseAddress = new Uri("http://20.76.24.174:80/api/v1/service/imagemlendpoint/score");
+                    client.BaseAddress = new Uri(Environment.GetEnvironmentVariable("MLUrl"));
 
                     // WARNING: The 'await' statement below can result in a deadlock
                     // if you are calling this code from the UI thread of an ASP.Net application.

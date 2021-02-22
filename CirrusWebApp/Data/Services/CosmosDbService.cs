@@ -11,7 +11,7 @@ namespace CirrusWebApp.Data.Services
     public class CosmosDbService
     {
         private string CosmosURI = "https://cirrus-csp.documents.azure.com:443/";
-        private string CosmosKey = "VV4xsp3QkDSnqaDllWIpblTo9uJjybNkDHlAzqGhDwA6YUC4TdOHsCQuPkwgU6shIQl4Lfu6s7N844WUQXVEVw=="; //Environment.GetEnvironmentVariable("CosmosKey");
+        private string CosmosKey = Environment.GetEnvironmentVariable("CosmosKey");
         private string CosmosDB = "cirrus-db";
         private string CosmosUserContainerName = "cirrus-user-container";
         private string CosmosUserFileContainerName = "cirrus-user-file-container";

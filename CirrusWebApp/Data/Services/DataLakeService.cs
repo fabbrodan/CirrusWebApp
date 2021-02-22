@@ -22,7 +22,7 @@ namespace CirrusWebApp.Data.Services
         private DataLakeFileSystemClient FileSystemClient;
 
         private string AccountName = "cirruscspstorageaccount";
-        private string AccountKey = "+s6lLIuOQeL0r8EDK+ctWjJDRFFXT2/xy+d10rlDSv4wXz6MDDjx5ZGWCC8a5dYwQUnonBi6s1RcOLnmloaJNA=="; //Environment.GetEnvironmentVariable("DataLakeKey");
+        private string AccountKey = Environment.GetEnvironmentVariable("DataLakeKey");
         private string ContainerUri = "https://cirruscspstorageaccount.dfs.core.windows.net/";
         public DataLakeService()
         {
