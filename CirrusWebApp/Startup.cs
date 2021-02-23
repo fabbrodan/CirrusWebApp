@@ -1,4 +1,3 @@
-using CirrusWebApp.Data;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
@@ -10,7 +9,6 @@ using CirrusWebApp.Data.Services;
 using Microsoft.AspNetCore.Http;
 using System.Net.Http;
 using Blazored.Localisation;
-using Microsoft.AspNetCore.SignalR;
 
 namespace CirrusWebApp
 {
@@ -49,7 +47,7 @@ namespace CirrusWebApp
             services.AddSignalR().AddAzureSignalR(options =>
             {
                 options.ServerStickyMode = Microsoft.Azure.SignalR.ServerStickyMode.Required;
-                options.ConnectionString = System.Environment.GetEnvironmentVariable("SignalR_ConnectionString");
+                options.ConnectionString = System.Environment.GetEnvironmentVariable("SignalR_ConnectionString") ?? Configuration["SignalR:ConnectionString"];
             });
 
             services.AddAuthentication().AddGoogle(o =>

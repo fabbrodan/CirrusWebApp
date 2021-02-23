@@ -21,7 +21,8 @@ namespace CirrusWebApp
             Host.CreateDefaultBuilder(args)
                 .ConfigureAppConfiguration((context, config) =>
                 {
-                var keyVaultEndpoint = new Uri(Environment.GetEnvironmentVariable("VaultUri"));
+                var builtConfig = config.Build();
+                var keyVaultEndpoint = new Uri(Environment.GetEnvironmentVariable("VaultUri") ?? builtConfig["KeyVault:Url"]);
                 config.AddAzureKeyVault(
                 keyVaultEndpoint,
                 new DefaultAzureCredential());

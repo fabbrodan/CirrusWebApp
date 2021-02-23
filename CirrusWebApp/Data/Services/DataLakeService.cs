@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Components.Forms;
 using Azure;
 using ICSharpCode.SharpZipLib.Zip;
 using Microsoft.JSInterop;
+using Microsoft.Extensions.Configuration;
 
 namespace CirrusWebApp.Data.Services
 {
@@ -27,6 +28,13 @@ namespace CirrusWebApp.Data.Services
         public DataLakeService()
         {
             SharedKeyCredential = new StorageSharedKeyCredential(AccountName, AccountKey);
+            ServiceClient = new DataLakeServiceClient(new Uri(ContainerUri), SharedKeyCredential);
+            FileSystemClient = ServiceClient.GetFileSystemClient("user-files");
+        }
+
+        public DataLakeService(IConfiguration Configuration)
+        {
+            SharedKeyCredential = new StorageSharedKeyCredential(AccountName, Configuration["DataLake:DataLakeKey"]);
             ServiceClient = new DataLakeServiceClient(new Uri(ContainerUri), SharedKeyCredential);
             FileSystemClient = ServiceClient.GetFileSystemClient("user-files");
         }

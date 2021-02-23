@@ -8,11 +8,19 @@ using System.Threading.Tasks;
 using CirrusWebApp.Data.Models;
 using Microsoft.AspNetCore.Components.Forms;
 using Newtonsoft.Json;
+using Microsoft.Extensions.Configuration;
 
 namespace CirrusWebApp.Data.Services
 {
     public class ImageClassifierService
     {
+        private string MLApiKey;
+        private string MLUrl;
+        public ImageClassifierService(IConfiguration Configuration)
+        {
+            MLApiKey = Configuration["ML:ApiKey"];
+            MLUrl = Configuration["ML:Url"];
+        }
         public async Task<List<string>> InvokeRequestResponseService(IBrowserFile File)
         {
             List<string> TagList = new();
@@ -58,9 +66,9 @@ namespace CirrusWebApp.Data.Services
                     };
 
 
-                    string apiKey = Environment.GetEnvironmentVariable("MLApiKey"); // Replace this with the API key for the web service
+                    string apiKey = Environment.GetEnvironmentVariable("MLApiKey") ?? MLApiKey; // Replace this with the API key for the web service
                     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
-                    client.BaseAddress = new Uri(Environment.GetEnvironmentVariable("MLUrl"));
+                    client.BaseAddress = new Uri(Environment.GetEnvironmentVariable("MLUrl") ?? MLUrl);
 
                     // WARNING: The 'await' statement below can result in a deadlock
                     // if you are calling this code from the UI thread of an ASP.Net application.

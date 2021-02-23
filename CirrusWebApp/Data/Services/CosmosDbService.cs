@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
 using CirrusWebApp.Data.Models;
+using Microsoft.Extensions.Configuration;
 
 namespace CirrusWebApp.Data.Services
 {
@@ -24,6 +25,14 @@ namespace CirrusWebApp.Data.Services
         public CosmosDbService()
         {
             CosmosDbClient = new CosmosClient(CosmosURI, CosmosKey);
+            CosmosUserContainer = CosmosDbClient.GetContainer(CosmosDB, CosmosUserContainerName);
+            CosmosUserFileContainer = CosmosDbClient.GetContainer(CosmosDB, CosmosUserFileContainerName);
+            CosmosUserCategoryContainer = CosmosDbClient.GetContainer(CosmosDB, CosmosUserCategoryContainerName);
+        }
+
+        public CosmosDbService(IConfiguration Configuration)
+        {
+            CosmosDbClient = new CosmosClient(CosmosURI, Configuration["Cosmos:CosmosKey"]);
             CosmosUserContainer = CosmosDbClient.GetContainer(CosmosDB, CosmosUserContainerName);
             CosmosUserFileContainer = CosmosDbClient.GetContainer(CosmosDB, CosmosUserFileContainerName);
             CosmosUserCategoryContainer = CosmosDbClient.GetContainer(CosmosDB, CosmosUserCategoryContainerName);

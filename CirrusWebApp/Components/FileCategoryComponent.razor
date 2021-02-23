@@ -66,24 +66,32 @@
             </div>
         </div>
     }
-<div class="row">
-    <div class="col-1">
-        <button @onclick="OnDelete" type="button" class="btn btn-danger" data-toggle="tooltip" data-placement="top" title="Delete the selected files">
-            <span class="oi oi-trash" aria-hidden="true"></span>
-        </button>
+    <div class="row">
+        <div class="col-1">
+            <button @onclick="OnDelete" type="button" class="btn btn-danger" data-toggle="tooltip" data-placement="top" title="Delete the selected files">
+                <span class="oi oi-trash" aria-hidden="true"></span>
+            </button>
+        </div>
+        <div class="col-1">
+            <button @onclick="OnDownload" type="button" class="btn btn-secondary" data-toggle="tooltip" data-placement="top" title="Download the selected files">
+                <span class="oi oi-cloud-download" aria-hidden="true"></span>
+            </button>
+        </div>
+        <div class="col-1">
+            <button onclick="document.getElementById('fileSelect').click();" type="button" class="btn btn-dark" data-toggle="tooltip" data-placement="top" title="Upload one or more files to this category">
+                <InputFile id="fileSelect" OnChange="FileAdd" Multiple style="display: none" />
+                <span class="oi oi-cloud-upload" aria-hidden="true"></span>
+            </button>
+        </div>
     </div>
-    <div class="col-1">
-        <button @onclick="OnDownload" type="button" class="btn btn-secondary" data-toggle="tooltip" data-placement="top" title="Download the selected files">
-            <span class="oi oi-cloud-download" aria-hidden="true"></span>
-        </button>
-    </div>
-    <div class="col-1">
-        <button onclick="document.getElementById('fileSelect').click();" type="button" class="btn btn-dark" data-toggle="tooltip" data-placement="top" title="Upload one or more files to this category">
-            <InputFile id="fileSelect" OnChange="FileAdd" Multiple style="display: none" />
-            <span class="oi oi-cloud-upload" aria-hidden="true"></span>
-        </button>
-    </div>
-</div>
+    @if(isUploadWorking)
+    {
+        <div class="row d-flex justify-content-center">
+            <div class="spinner-grow" style="width: 200px; height: 200px;">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+    }
 </div>
 
 @code {
@@ -101,6 +109,7 @@
     private List<File> CirrusFiles;
     private EditContext Context;
     private List<string> ImageExtensions = new List<string>() { "jpg", "jpeg", "png" };
+    private bool isUploadWorking = false;
 
     List<File> SelectedFiles = new List<File>();
     DateTime CurrentTimeStampLocalized;
@@ -129,6 +138,7 @@
             string FileTitle = file.Name.Substring(0, 0 + file.Name.LastIndexOf("."));
             FileTitle = regex.Replace(FileTitle, " ");
             var FileExtension = file.Name.Substring(file.Name.LastIndexOf(".") + 1);
+            isUploadWorking = true;
             if (ImageExtensions.Contains(FileExtension))
             {
                 Tags = await ImageClassifier.InvokeRequestResponseService(file);
@@ -145,6 +155,7 @@
             }) ;
         }
         await Upload();
+        isUploadWorking = false;
     }
 
     private async Task Upload()
